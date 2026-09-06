@@ -1,0 +1,17 @@
+{
+  "images": [
+    "catalog_batch_output/image1_processed.jpg"
+  ],
+  "visual_analysis": {
+    "status": "success",
+    "product_type": "Decorative Terracotta Pot",
+    "material": "Terracotta clay, metallic paint",
+    "color": "Red and Gold",
+    "visual_attributes": [
+      "Hand-painted gold leaf motifs",
+      "Gold painted rim",
+      "Bulbous body shape",
+      "Flared rim opening"
+    ]
+  }
+}

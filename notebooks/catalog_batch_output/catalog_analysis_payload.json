@@ -1,0 +1,17 @@
+{
+  "images": [
+    "catalog_batch_output\\image1_processed.jpg"
+  ],
+  "visual_analysis": {
+    "status": "inspected",
+    "product_type": "Handcrafted Terracotta Matka / Decorative Pot",
+    "material": "Terracotta clay, metallic paint",
+    "color": "Red base with gold embellishments",
+    "visual_attributes": [
+      "Hand-painted gold leaf motifs",
+      "Gold rim trim",
+      "Bulbous round body",
+      "Wide-mouthed rim"
+    ]
+  }
+}

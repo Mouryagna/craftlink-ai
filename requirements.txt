@@ -16,3 +16,4 @@ requests
 gradio_client
 groq
 gTTS
+typing-extensions
