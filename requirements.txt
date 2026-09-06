@@ -17,3 +17,9 @@ gradio_client
 groq
 gTTS
 typing-extensions
+beautifulsoup4
+scikit-learn
+xgboost
+sentence-transformers
+pytrends
+joblib
