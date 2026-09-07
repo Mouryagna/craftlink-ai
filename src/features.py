@@ -446,8 +446,15 @@ class PricingFeatureEngineer:
 
         for item in items:
 
+            # SimilarProduct exposes ``similarity_score``.
+            # Keep ``score`` as a backward-compatible fallback for
+            # dictionary-based fixtures.
             score = self._safe_float(
-                self._get(item, "score", None),
+                self._get(
+                    item,
+                    "similarity_score",
+                    self._get(item, "score", None),
+                ),
                 default=0.0,
             )
 

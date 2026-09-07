@@ -1,0 +1,112 @@
+[
+  {
+    "source_key": "kaarigaronline",
+    "source": "Kaarigar Online",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "gaatha",
+    "source": "Gaatha",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "jaypore",
+    "source": "Jaypore",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "goswadeshi",
+    "source": "GoSwadeshi",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "karigar",
+    "source": "Karigar",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "santarms",
+    "source": "Santarms",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "kaari",
+    "source": "Kaari",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "kaarigo",
+    "source": "Kaarigo",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "okhai",
+    "source": "Okhai",
+    "homepage_ok": true,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "amazon",
+    "source": "Amazon India",
+    "homepage_ok": false,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  },
+  {
+    "source_key": "flipkart",
+    "source": "Flipkart",
+    "homepage_ok": false,
+    "candidate_urls": 0,
+    "attempted": 0,
+    "valid_product": false,
+    "sample_product_url": "",
+    "sample_record": null
+  }
+]
