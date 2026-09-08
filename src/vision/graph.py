@@ -23,17 +23,23 @@ vision_subgraph = builder.compile()
 if __name__ == "__main__":
     base_dir = Path.cwd()
     media_dir = base_dir / "media"
+    media_dir.mkdir(parents=True, exist_ok=True)
 
-    # Collect available test images in media directory (up to 5)
-    sample_images = [
-        str(p) for p in media_dir.glob("*.jpg")
-    ][:5]
+    # Collect available test images in media directory or project root (up to 5)
+    extensions = ("*.jpg", "*.jpeg", "*.png", "*.webp")
+    sample_images = []
+    for ext in extensions:
+        sample_images.extend([str(p) for p in media_dir.glob(ext)])
+        if len(sample_images) >= 5:
+            break
 
-    # If no jpg images found, check for png
     if not sample_images:
-        sample_images = [
-            str(p) for p in media_dir.glob("*.png")
-        ][:5]
+        for ext in extensions:
+            sample_images.extend([str(p) for p in base_dir.glob(ext)])
+            if len(sample_images) >= 5:
+                break
+
+    sample_images = sample_images[:5]
 
     print("[-] Running Vision Module Subgraph...")
     print(f"[-] Input Images Count: {len(sample_images)}")
@@ -41,21 +47,21 @@ if __name__ == "__main__":
     initial_input: VisionState = {
         "product_id": "ART-000001",
         "image_paths": sample_images,
-        "custom_bg_color": "#FFFFFF"  # Choose any studio hex e.g. "#FFFFFF", "#F9F6EE"
+        "custom_bg_color": "#FFFFFF"
     }
 
     result = vision_subgraph.invoke(initial_input)
-    final_output = result["final_output"]
+    final_output = result.get("final_output", {})
 
     print("\n==========================================")
     print("1. PROCESSED STUDIO IMAGES")
     print("==========================================")
-    print(json.dumps(final_output["processed_images"], indent=2, ensure_ascii=False))
+    print(json.dumps(final_output.get("processed_images", {}), indent=2, ensure_ascii=False))
 
     print("\n==========================================")
     print("2. VISUAL ANALYSIS & DIMENSIONS")
     print("==========================================")
-    print(json.dumps(final_output["visual_analysis"], indent=2, ensure_ascii=False))
+    print(json.dumps(final_output.get("visual_analysis", {}), indent=2, ensure_ascii=False))
 
     print("\n==========================================")
     print("3. FULL VISION MODULE OUTPUT")

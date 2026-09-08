@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="58171a3c-aa99-4dee-85da-610e6d0042da" name="Changes" comment="removed weights from git">
+      <change afterPath="$PROJECT_DIR$/.github/workflows/pricing_sync.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/sync_market_scraper.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/scripts/train_pricing_model.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/master_graph.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/master_node.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/master_state.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/benchmark_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/core_rules.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/graph.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/ml_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/nodes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/pricing/state.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/pricing.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/pricing.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_1_studio.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_2_studio.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_3_studio.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_4_studio.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/pricing/catboost_pricing_model.cbm" beforeDir="false" afterPath="$PROJECT_DIR$/models/pricing/catboost_pricing_model.cbm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/vision/graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vision/graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/vision/nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vision/nodes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/voice_catalog/graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/voice_catalog/graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/voice_catalog/nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/voice_catalog/nodes.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.5129930353675891" />
+      <entry key="MS500" value="2.6445554571149223" />
+      <entry key="S2" value="4.211637809506618" />
+      <entry key="S5" value="5.474890839975324" />
+      <entry key="S10" value="6.142322413779308" />
+      <entry key="S30" value="6.732321071729241" />
+      <entry key="S60" value="7.8666350997239105" />
+      <entry key="M2" value="11.995352609405904" />
+      <entry key="M5" value="21.400518936667517" />
+      <entry key="M10" value="29.725497301388003" />
+      <entry key="M15" value="34.839065625654094" />
+      <entry key="M30" value="46.58048659549463" />
+      <entry key="H1" value="63.80114117462048" />
+      <entry key="H2" value="81.57237792048316" />
+      <entry key="H4" value="94.9702946988973" />
+      <entry key="D1" value="109.60117284923729" />
+      <entry key="W1" value="112.5036779897312" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="2.9033078480578167E-185" />
+      <entry key="S5" value="1.5316418884046417E-74" />
+      <entry key="S10" value="1.2375952037740932E-37" />
+      <entry key="S30" value="4.98340525552265E-13" />
+      <entry key="S60" value="7.059323802973376E-7" />
+      <entry key="M2" value="8.401978221212769E-4" />
+      <entry key="M5" value="0.05885083384816256" />
+      <entry key="M10" value="0.24259531851626331" />
+      <entry key="M15" value="0.38919785860850975" />
+      <entry key="M30" value="0.6387280283373955" />
+      <entry key="H1" value="0.9124196030177599" />
+      <entry key="H2" value="1.2389371208883646" />
+      <entry key="H4" value="1.5345271766760464" />
+      <entry key="D1" value="1.9065033534755658" />
+      <entry key="W1" value="1.9861847712323928" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.4708833158774082" />
+      <entry key="MS500" value="2.6288294448070992" />
+      <entry key="S2" value="4.205275531774715" />
+      <entry key="S5" value="5.471608056182625" />
+      <entry key="S10" value="6.140488685548334" />
+      <entry key="S30" value="6.731653132374488" />
+      <entry key="S60" value="7.866243125481311" />
+      <entry key="M2" value="11.995800392093221" />
+      <entry key="M5" value="21.45713679668921" />
+      <entry key="M10" value="29.96400179099877" />
+      <entry key="M15" value="35.223993256931756" />
+      <entry key="M30" value="47.21579845936775" />
+      <entry key="H1" value="64.71131527092618" />
+      <entry key="H2" value="82.80998451551352" />
+      <entry key="H4" value="96.50408574503967" />
+      <entry key="D1" value="111.50754108489045" />
+      <entry key="W1" value="114.48984311020146" />
+    </decayedShown>
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "git-widget-placeholder": "main",
+    "node.js.selected.package.tslint": "(autodetect)"
+  }
+}]]></component>
+  <component name="TaskManager">
+    <task id="LOCAL-00001">
+      <option name="closed" value="true" />
+      <created>1788878317749</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1788878317749</updated>
+    </task>
+    <task id="LOCAL-00002" summary="removed weights from git">
+      <option name="closed" value="true" />
+      <created>1788878457092</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1788878457092</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="removed weights from git" />
+    <option name="LAST_COMMIT_MESSAGE" value="removed weights from git" />
+  </component>
+</project>

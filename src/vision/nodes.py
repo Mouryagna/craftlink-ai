@@ -6,7 +6,8 @@ from typing import Dict, Any, List, Optional
 
 import requests
 from PIL import Image
-from dotenv import load_dotenv,find_dotenv
+from dotenv import load_dotenv, find_dotenv
+
 load_dotenv(find_dotenv())
 
 from src.vision.state import (
@@ -24,17 +25,23 @@ from src.vision.state import (
 # =========================================================================
 
 def process_with_photoroom_ai(
-        input_path: Path,
-        bg_hex: str = "FFFFFF",
-        api_key: Optional[str] = None
+    input_path: Path,
+    bg_hex: str = "FFFFFF",
+    api_key: Optional[str] = None
 ) -> bytes:
     """
-    Calls Photoroom's studio pipeline to remove background and cast
-    a realistic physical floor contact shadow.
+    Calls Photoroom v2 API. If it fails (invalid key, quota exceeded, or network error),
+    it logs a warning and falls back to local rembg cutout instead of crashing.
     """
+    if not api_key:
+        print("    [!] PHOTOROOM_API_KEY not set. Using local rembg fallback.")
+        fallback = fallback_clean_cutout(input_path, f"#{bg_hex.lstrip('#')}")
+        buf = io.BytesIO()
+        fallback.save(buf, format="JPEG", quality=95)
+        return buf.getvalue()
+
     clean_hex = bg_hex.lstrip("#")
     url = "https://image-api.photoroom.com/v2/edit"
-
     headers = {"x-api-key": api_key}
     data = {
         "background.color": clean_hex,
@@ -43,18 +50,27 @@ def process_with_photoroom_ai(
         "outputSize": "1200x1200"
     }
 
-    with open(input_path, "rb") as f:
-        files = {"imageFile": (input_path.name, f, "image/jpeg")}
-        response = requests.post(url, headers=headers, data=data, files=files, timeout=60)
+    try:
+        with open(input_path, "rb") as f:
+            files = {"imageFile": (input_path.name, f, "image/jpeg")}
+            response = requests.post(url, headers=headers, data=data, files=files, timeout=30)
 
-    if response.status_code != 200:
-        raise RuntimeError(f"Photoroom API error ({response.status_code}): {response.text}")
+        if response.status_code == 200:
+            return response.content
 
-    return response.content
+        print(f"    [!] Photoroom API error ({response.status_code}): {response.text}")
+    except Exception as e:
+        print(f"    [!] Photoroom network error: {e}")
+
+    print("    [!] Executing automatic local rembg fallback...")
+    fallback = fallback_clean_cutout(input_path, f"#{bg_hex.lstrip('#')}")
+    buf = io.BytesIO()
+    fallback.save(buf, format="JPEG", quality=95)
+    return buf.getvalue()
 
 
 def fallback_clean_cutout(input_path: Path, bg_hex: str = "#FFFFFF") -> Image.Image:
-    """Fallback if API key is not present."""
+    """Fallback using rembg if Photoroom API key is missing or encounters an error."""
     import rembg
     raw = Image.open(input_path).convert("RGB")
     cutout = rembg.remove(raw)
@@ -96,16 +112,17 @@ def enhance_images_node(state: VisionState) -> Dict[str, Any]:
                 processed_bytes = process_with_photoroom_ai(orig_file, bg_hex=bg_color, api_key=api_key)
                 with open(studio_file, "wb") as f:
                     f.write(processed_bytes)
-                print(f"    [+] Commercial studio finish saved.")
+                print("    [+] Commercial studio finish saved via Photoroom.")
             except Exception as e:
-                print(f"    [!] Photoroom error: {e}. Using fallback...")
+                print(f"    [!] Photoroom error: {e}. Executing rembg fallback...")
                 fallback_img = fallback_clean_cutout(orig_file, bg_hex=bg_color)
                 fallback_img.save(studio_file, format="JPEG", quality=95)
         else:
-            print("    [!] PHOTOROOM_API_KEY not found in env. Running basic fallback...")
+            print("    [!] PHOTOROOM_API_KEY not found in env. Running rembg fallback...")
             fallback_img = fallback_clean_cutout(orig_file, bg_hex=bg_color)
             fallback_img.save(studio_file, format="JPEG", quality=95)
 
+        # First valid processed image becomes the hero shot
         if hero_studio_path is None:
             hero_studio_path = str(studio_file)
 
@@ -134,23 +151,25 @@ def visual_analysis_node(state: VisionState) -> Dict[str, Any]:
 
     analysis_data = None
 
-    if gemini_key and image_paths:
+    valid_images = [p for p in image_paths if Path(p).exists()]
+
+    if gemini_key and valid_images:
         try:
             from google import genai
             from google.genai import types
 
             client = genai.Client(api_key=gemini_key)
-            pil_images = [Image.open(p) for p in image_paths if Path(p).exists()]
+            pil_images = [Image.open(p) for p in valid_images]
 
             prompt = """Analyze these handicraft photos as an e-commerce catalog specialist.
 Estimate physical dimensions in cm, size category, dominant colors, and craft complexity.
 
 Return valid JSON:
 {
-  "detected_craft_type": "string",
+  "detected_craft_type": "terracotta pottery | bamboo basket | wooden craft | handloom textile",
   "primary_color": "string",
   "detected_colors": ["list of colors"],
-  "size_category": "Small, Medium, or Large",
+  "size_category": "small, medium, or large",
   "dimensions_estimate": {
     "length": float,
     "width": float,
@@ -168,23 +187,42 @@ Return valid JSON:
             )
             analysis_data = json.loads(response.text)
         except Exception as e:
-            print(f"[!] Gemini visual analysis fallback: {e}")
+            print(f"[!] Gemini visual analysis fallback triggered: {e}")
 
+    # Fallback values if API fails or images are unavailable
     if not analysis_data:
         analysis_data = {
-            "detected_craft_type": "Clay Terracotta Pot",
+            "detected_craft_type": "terracotta pottery",
             "primary_color": "Terracotta Red",
             "detected_colors": ["Terracotta Red", "Brown"],
-            "size_category": "Medium",
+            "size_category": "medium",
             "dimensions_estimate": {"length": 18.0, "width": 18.0, "height": 20.0, "unit": "cm"},
             "visual_complexity_score": 3,
             "surface_detailing": "Earthy natural clay finish with standard flared neck"
         }
 
+    # Strict normalization for pricing module matching
+    raw_size = str(analysis_data.get("size_category", "medium")).lower().strip()
+    if raw_size not in ["small", "medium", "large"]:
+        raw_size = "medium"
+    analysis_data["size_category"] = raw_size
+
+    # Ensure complexity score is an integer between 1 and 5
+    raw_complexity = int(analysis_data.get("visual_complexity_score", 3))
+    analysis_data["visual_complexity_score"] = max(1, min(5, raw_complexity))
+
     visual_analysis = VisualAnalysis(**analysis_data)
+
+    # Safely retrieve processed images state
+    processed_imgs_dict = state.get("processed_images") or {
+        "items": [],
+        "hero_studio_path": None,
+        "background_color": state.get("custom_bg_color", "#FFFFFF")
+    }
+
     final_output = VisionModuleOutput(
         product_id=product_id,
-        processed_images=ProcessedImages(**state["processed_images"]),
+        processed_images=ProcessedImages(**processed_imgs_dict),
         visual_analysis=visual_analysis
     )
 

@@ -25,6 +25,7 @@ pytrends
 joblib
 whisper
 imageio-ffmpeg
-basicsr
-realesrgan
 spandrel
+fastapi
+uvicorn
+python-multipart

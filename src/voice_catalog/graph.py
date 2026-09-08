@@ -26,28 +26,42 @@ nlp_subgraph = builder.compile()
 
 if __name__ == "__main__":
     base_dir = Path.cwd()
-    sample_audio = base_dir / "media" / "artisan_sample.mp3"
+    media_dir = base_dir / "media"
+    media_dir.mkdir(parents=True, exist_ok=True)
 
-    # Ensure audio exists for local verification
-    if not sample_audio.exists():
-        sample_audio = base_dir / "media" / "artisan_sample.mp3"
+    # Look for any available audio sample
+    audio_extensions = ("*.mp3", "*.wav", "*.m4a", "*.ogg")
+    sample_audio = None
+    for ext in audio_extensions:
+        found = list(media_dir.glob(ext))
+        if found:
+            sample_audio = found[0]
+            break
 
-        if not sample_audio.exists():
-            raise FileNotFoundError(f"Audio file not found at: {sample_audio}")
+    print("[-] Running NLP / Voice Module Subgraph Self-Test...")
 
-    print("[-] Running NLP Module Subgraph...")
-    initial_input: VoiceState = {
-        "product_id": "ART-000001",
-        "audio_path": str(sample_audio)
-    }
+    if sample_audio and sample_audio.exists():
+        print(f"[-] Testing with audio file: {sample_audio.name}")
+        initial_input: VoiceState = {
+            "product_id": "ART-000001",
+            "audio_path": str(sample_audio),
+            "manual_text": None
+        }
+    else:
+        print("[-] No audio file detected in media/ folder. Testing with manual text input...")
+        initial_input: VoiceState = {
+            "product_id": "ART-000001",
+            "audio_path": None,
+            "manual_text": "हमने यह लाल मिट्टी का बर्तन हाथ से चाक पर बनाया है। इसमें 6 घंटे का समय लगा और 150 रुपये की कच्ची सामग्री लगी। हम इसे कम से कम 400 में बेचना चाहते हैं।"
+        }
 
     result = nlp_subgraph.invoke(initial_input)
-    final_output = result["final_output"]
+    final_output = result.get("final_output", {})
 
     print("\n==========================================")
     print("1. PRICING INPUT FEATURES (NLP EXTRACTED)")
     print("==========================================")
-    print(json.dumps(final_output["pricing_input_features"], indent=2, ensure_ascii=False))
+    print(json.dumps(final_output.get("pricing_input_features", {}), indent=2, ensure_ascii=False))
 
     print("\n==========================================")
     print("2. FULL NLP MODULE OUTPUT (SCHEMA VERIFIED)")

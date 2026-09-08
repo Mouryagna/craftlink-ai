@@ -4,7 +4,7 @@ import json
 import uuid
 import subprocess
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import numpy as np
 import whisper
 import whisper.audio
@@ -45,7 +45,6 @@ from src.voice_catalog.state import (
     VoiceState,
     ProductInformation,
     Catalog,
-    CatalogLanguage,
     DimensionsSchema,
     PricingInputFeatures,
     NLPModuleOutput
@@ -62,26 +61,46 @@ def get_whisper_model():
 
 
 # ==========================================
-# NODE 1: Whisper ASR Transcription
+# NODE 1: Ingestion (Manual Text OR Speech)
 # ==========================================
 
 def transcribe_node(state: VoiceState) -> Dict[str, Any]:
+    """
+    Handles dual input pathways:
+    1. If user typed manual text -> routes directly to downstream cataloging.
+    2. If user recorded audio -> passes through Whisper ASR.
+    """
+    manual_text = state.get("manual_text", "").strip() if state.get("manual_text") else ""
     audio_path = state.get("audio_path")
     product_id = state.get("product_id") or f"ART-{uuid.uuid4().hex[:6].upper()}"
 
-    if not audio_path or not Path(audio_path).exists():
-        raise FileNotFoundError(f"Audio file not found: {audio_path}")
+    # Path A: User provided manual input
+    if manual_text:
+        print(f"[-] Manual text received for product {product_id}. Bypassing Whisper.")
+        return {
+            "product_id": product_id,
+            "transcription": manual_text
+        }
 
-    model = get_whisper_model()
-    result = model.transcribe(
-        audio_path,
-        language="hi",
-        initial_prompt="यह हस्तनिर्मित भारतीय शिल्पकला उत्पाद का विवरण है।"
-    )
+    # Path B: User recorded audio
+    if audio_path and Path(audio_path).exists():
+        print(f"[-] Transcribing voice note via Whisper for product {product_id}...")
+        model = get_whisper_model()
+        result = model.transcribe(
+            audio_path,
+            language="hi",
+            initial_prompt="यह हस्तनिर्मित भारतीय शिल्पकला उत्पाद का विवरण, लागत और समय है।"
+        )
+        return {
+            "product_id": product_id,
+            "transcription": result.get("text", "").strip()
+        }
 
+    # Path C: Fallback baseline if neither was provided
+    print("[!] No audio or manual text provided. Using default artisan template.")
     return {
         "product_id": product_id,
-        "transcription": result.get("text", "").strip()
+        "transcription": "हमने यह लाल मिट्टी का बर्तन हाथ से चाक पर बनाया है। इसमें 6 घंटे का समय लगा और 150 रुपये की सामग्री लगी।"
     }
 
 
@@ -102,17 +121,20 @@ def extract_and_catalog_node(state: VoiceState) -> Dict[str, Any]:
 
             client = genai.Client(api_key=api_key)
             prompt = f"""You are an expert Indian artisan e-commerce cataloger.
-Given this artisan's Hindi voice note transcription:
+Given this artisan's description (Hindi or English):
 "{transcription}"
 
 Return a valid JSON object matching this exact schema:
 {{
   "translation": "Precise English translation of the transcription",
   "product_information": {{
-    "product_type": "Specific product category / type",
+    "product_type": "terracotta pottery | bamboo basket | wooden craft | handloom textile",
     "material": "Comma-separated list of raw materials used",
     "craft_method": "Artisanal technique and crafting methods used",
-    "production_time": "Production duration (e.g., '2 days')"
+    "production_time": "Production duration string (e.g. '6 hours' or '2 days')",
+    "time_worked_hours": float (total actual labor hours spent, default 6.0),
+    "stated_material_cost": float or null (extracted cost in INR if stated, else null),
+    "artisan_floor_price": float or null (minimum selling price if stated, else null)
   }},
   "catalog": {{
     "english": {{
@@ -147,53 +169,46 @@ Return a valid JSON object matching this exact schema:
         except Exception as e:
             print(f"[!] Gemini extraction failed ({e}), using default fallback.")
 
-    # High quality fallback matching target format if offline or on failure
+    # High quality domain fallback if offline or API failure
     if not extracted_payload:
         extracted_payload = {
-            "translation": "We made this pot using pure red clay from our village river. Gold leaf motifs have been hand-carved on it. It took us a full two days to make this. It is very auspicious for Diwali worship and home decoration.",
+            "translation": "We made this terracotta vessel by hand on the potter's wheel. It took 6 hours of labor and 150 rupees in raw materials.",
             "product_information": {
-                "product_type": "Decorative Terracotta Pot",
-                "material": "Pure Red Terracotta Clay, Metallic Paint",
-                "craft_method": "Hand-painted & Hand-carved Gold Leaf Motifs",
-                "production_time": "2 days"
+                "product_type": "terracotta pottery",
+                "material": "Pure Riverbed Clay, Natural Terracotta",
+                "craft_method": "Wheel-thrown & Sun-dried Kiln Fired",
+                "production_time": "6 hours",
+                "time_worked_hours": 6.0,
+                "stated_material_cost": 150.0,
+                "artisan_floor_price": 400.0
             },
             "catalog": {
                 "english": {
-                    "title": "Handcrafted Terracotta Decorative Pot with Gold Leaf Motifs",
-                    "description": "Elevate your festive home decor with this handcrafted terracotta pot. Made from pure river clay sourced from local Indian villages, this decorative vessel features a vibrant red finish adorned with hand-painted metallic gold leaf motifs and a gilded flared rim. Ideal for Diwali puja, festive centerpieces, or adding rustic elegance to your living space, each pot is uniquely crafted over two days by traditional artisans.",
+                    "title": "Handcrafted Traditional Terracotta Clay Pot",
+                    "description": "Elevate your home decor and festive rituals with this authentic wheel-thrown terracotta pot. Sourced from natural riverbed clay and fired in traditional kilns, it embodies centuries of heritage craftsmanship.",
                     "bullet_points": [
-                        "PURE RIVER CLAY: Expertly crafted from authentic red river soil by skilled village artisans.",
-                        "HAND-PAINTED GOLD DETAILS: Decorated with elegant hand-painted gold leaf motifs and a metallic rim.",
-                        "AUSPICIOUS FESTIVE DECOR: Perfect for Diwali Puja, housewarming ceremonies, and traditional Indian decor.",
-                        "DEDICATED ARTISANSHIP: Carefully hand-shaped, carved, and detailed over a 2-day crafting process."
+                        "AUTHENTIC CLAY: Made from 100% natural, unadulterated riverbed clay.",
+                        "WHEEL-THROWN: Individually shaped on traditional potters' wheels.",
+                        "ECO-FRIENDLY & SUSTAINABLE: Biodegradable, chemical-free artisanal finish.",
+                        "CULTURAL HERITAGE: Direct from rural Indian pottery master craftsmen."
                     ],
                     "seo_keywords": [
-                        "Terracotta Pot",
-                        "Decorative Clay Matka",
-                        "Diwali Decor",
-                        "Handcrafted Kalash",
-                        "Indian Handicrafts",
-                        "Gold Painted Pot",
-                        "Festive Home Decor"
+                        "Terracotta Pot", "Clay Matka", "Handmade Pottery",
+                        "Indian Handicrafts", "Diwali Decor", "Eco friendly planter", "Traditional Vessel"
                     ]
                 },
                 "hindi": {
-                    "title": "हस्तनिर्मित सजावटी टेराकोटा मटका - सुनहरी पत्तियों की नक्काशी के साथ",
-                    "description": "अपने घर और त्योहारों की सजावट में पारंपरिक आकर्षण जोड़ें। गाँव की नदी की शुद्ध लाल मिट्टी से तैयार, यह सजावटी मटका हाथों से बनाई गई सुनहरी पत्तियों की सुंदर नक्काशी और सुनहरे बॉर्डर से सजाया गया है। कुशल कारीगरों द्वारा २ दिन के कठिन परिश्रम से निर्मित, यह दिवाली पूजन, धार्मिक अनुष्ठानों और गृह सज्जा के लिए एक अत्यंत शुभ एवं सुंदर विकल्प है।",
+                    "title": "हाथ से बना पारंपरिक टेराकोटा मिट्टी का बर्तन",
+                    "description": "अपने घर और पूजा स्थल को इस प्रामाणिक हस्तनिर्मित टेराकोटा बर्तन से सजाएं। नदी की शुद्ध चिकनी मिट्टी से चाक पर निर्मित और पारंपरिक भट्टी में पकाया गया यह बर्तन भारतीय शिल्पकला का अनूठा उदाहरण है।",
                     "bullet_points": [
-                        "शुद्ध प्राकृतिक मिट्टी: गाँव की नदी की शुद्ध लाल मिट्टी से निर्मित प्रामाणिक हस्तशिल्प।",
-                        "सुंदर सुनहरी नक्काशी: हाथों से उकेरी गई सुनहरी पत्तियाँ और आकर्षक गोल रिम।",
-                        "त्योहारों के लिए शुभ: दिवाली पूजा, अनुष्ठानों और गृह सज्जा के लिए अत्यंत उपयुक्त।",
-                        "उत्कृष्ट कारीगरी: कारीगरों द्वारा २ दिनों के विशेष परिश्रम और समर्पण से तैयार।"
+                        "प्राकृतिक नदी मिट्टी: 100% शुद्ध और रासायनिक रंगों से रहित प्राकृतिक मिट्टी।",
+                        "चाक पर निर्मित: कुशल कारीगरों द्वारा पारंपरिक चाक पर हस्तनिर्मित।",
+                        "पर्यावरण अनुकूल: पूर्णतः पर्यावरण-हितैषी और पारंपरिक शैली में निर्मित।",
+                        "त्योहारों के लिए उत्तम: गृह सज्जा और पारंपरिक पूजा-अर्चना हेतु श्रेष्ठ।"
                     ],
                     "seo_keywords": [
-                        "टेराकोटा मटका",
-                        "सजावटी कलश",
-                        "दिवाली सजावट",
-                        "हस्तशिल्प मटका",
-                        "पूजा कलश",
-                        "भारतीय हस्तकला",
-                        "गृह सज्जा"
+                        "टेराकोटा बर्तन", "मिट्टी का गमला", "हस्तशिल्प मटका",
+                        "भारतीय मिट्टी कला", "पूजा सामग्री", "हस्तनिर्मित शिल्प", "पर्यावरण अनुकूल"
                     ]
                 }
             }
@@ -215,47 +230,63 @@ def assemble_pricing_features_node(state: VoiceState) -> Dict[str, Any]:
     catalog_en = state["catalog"]["english"]
     product_id = state.get("product_id", "ART-000001")
 
-    # 1. Parse raw materials into primary and additional
+    # 1. Parse raw materials list
     materials_list = [m.strip() for m in prod_info.get("material", "Clay").split(",") if m.strip()]
     primary_material = materials_list[0] if materials_list else "Clay"
     additional_materials = materials_list[1:] if len(materials_list) > 1 else []
 
-    # 2. Compute time_worked_hours from production_time string
-    time_str = prod_info.get("production_time", "1")
-    matched_digits = re.findall(r"\d+", str(time_str))
-    if "hour" in str(time_str).lower():
-        worked_hours = float(matched_digits[0]) if matched_digits else 8.0
+    # 2. Extract or calculate time_worked_hours
+    worked_hours = prod_info.get("time_worked_hours")
+    if worked_hours is None:
+        time_str = str(prod_info.get("production_time", "1"))
+        matched_digits = re.findall(r"\d+", time_str)
+        if "hour" in time_str.lower():
+            worked_hours = float(matched_digits[0]) if matched_digits else 6.0
+        else:
+            days = float(matched_digits[0]) if matched_digits else 1.0
+            worked_hours = days * 8.0
     else:
-        # Default: 1 day = 8 working hours for artisans
-        days = float(matched_digits[0]) if matched_digits else 1.0
-        worked_hours = days * 8.0
+        worked_hours = float(worked_hours)
 
-    # 3. Assemble feature tags from craft method and bullet points
+    # 3. Compile distinctive feature tags
     features: List[str] = []
     if prod_info.get("craft_method"):
         features.extend([m.strip() for m in prod_info["craft_method"].split("&")])
     features.append("Handcrafted")
-    features = list(dict.fromkeys(features))  # Remove duplicates preserving order
+    features = list(dict.fromkeys(features))
 
-    # 4. Initialize pricing input features (leaves vision-derived fields as None for Module 1)
+    # 4. Standardize craft type for market benchmark lookup
+    raw_type = str(prod_info.get("product_type", "terracotta pottery")).lower()
+    if any(k in raw_type for k in ["pot", "terracotta", "clay"]):
+        standardized_craft = "terracotta pottery"
+    elif any(k in raw_type for k in ["bamboo", "basket", "cane"]):
+        standardized_craft = "bamboo basket"
+    elif any(k in raw_type for k in ["wood", "carving", "timber"]):
+        standardized_craft = "wooden craft"
+    elif any(k in raw_type for k in ["textile", "saree", "handloom", "shawl", "stole"]):
+        standardized_craft = "handloom textile"
+    else:
+        standardized_craft = "terracotta pottery"
+
+    # 5. Build Pricing Input Features
     pricing_features = PricingInputFeatures(
         product_id=product_id,
-        product_name=catalog_en.get("title", prod_info.get("product_type", "Handmade Craft")),
-        product_type=prod_info.get("product_type", "Craft"),
+        product_name=catalog_en.get("title", "Handmade Craft"),
+        product_type=standardized_craft,
         material=primary_material,
         additional_materials=additional_materials,
-        color=None,  # To be filled by Image Module
-        size=None,   # To be filled by Image Module
+        color=None,
+        size=None,
         dimensions=DimensionsSchema(length=None, width=None, height=None, unit="cm"),
         features=features,
         description=catalog_en.get("description", ""),
-        material_cost=None,
+        material_cost=prod_info.get("stated_material_cost"),
         labour_cost=None,
         production_cost=None,
         time_worked_hours=worked_hours
     )
 
-    # 5. Build final consolidated output matching your specification
+    # 6. Build Final NLP Output schema
     final_output = NLPModuleOutput(
         product_id=product_id,
         transcription=state["transcription"],
