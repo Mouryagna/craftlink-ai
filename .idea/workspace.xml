@@ -5,16 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f204aa81-7e7d-40b1-ac24-8a04f3b7f7a2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/SIH_2026.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/database.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/features.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/marketplace.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/marketplace_pricing.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/similarity.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/vision/graph.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/vision/nodes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/vision/state.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/voice_catalog/audio.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/voice_catalog/graph.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/voice_catalog/nodes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/voice_catalog/state.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -22,7 +21,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="19" />
+    <option name="cachedIndexableFilesCount" value="57" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -41,12 +40,12 @@
     &quot;assignee&quot;: &quot;Mouryagna&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Mouryagna/craftlink-ai.git&quot;,
-    &quot;accountId&quot;: &quot;779375fa-525a-42de-b652-eeccd7a68ded&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/Mouryagna/craftlink-ai.git",
+    "accountId": "8b352a94-4632-45ab-815e-340f9cde72af"
   }
-}</component>
+}]]></component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/database/pricing.db" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/notebooks/marketplace_pricing.ipynb" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" root2="FORCE_HIGHLIGHTING" />
@@ -60,61 +59,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.7526233737055334" />
-      <entry key="MS500" value="1.944842587147971" />
-      <entry key="S2" value="2.1515508114641855" />
-      <entry key="S5" value="2.73254065413084" />
-      <entry key="S10" value="3.215982682590041" />
-      <entry key="S30" value="4.200611357859998" />
-      <entry key="S60" value="6.2173137990869325" />
-      <entry key="M2" value="9.829820943585524" />
-      <entry key="M5" value="16.876324637491773" />
-      <entry key="M10" value="22.40173659605002" />
-      <entry key="M15" value="25.154514083295307" />
-      <entry key="M30" value="35.92515361159227" />
-      <entry key="H1" value="91.77408221202275" />
-      <entry key="H2" value="222.31948048987755" />
-      <entry key="H4" value="391.7326648786733" />
-      <entry key="D1" value="680.6903253514829" />
-      <entry key="W1" value="754.7059406696793" />
+      <entry key="MS100" value="1.2884962625617766" />
+      <entry key="MS500" value="3.269679842670524" />
+      <entry key="S2" value="6.628194270887083" />
+      <entry key="S5" value="12.228237068273128" />
+      <entry key="S10" value="17.493143441172627" />
+      <entry key="S30" value="25.1129900493087" />
+      <entry key="S60" value="33.21100058259926" />
+      <entry key="M2" value="44.19027659675669" />
+      <entry key="M5" value="56.52568147582229" />
+      <entry key="M10" value="62.49509767313302" />
+      <entry key="M15" value="65.90637051885527" />
+      <entry key="M30" value="76.02270919638904" />
+      <entry key="H1" value="95.58496937742903" />
+      <entry key="H2" value="154.34370900149068" />
+      <entry key="H4" value="299.8015953306067" />
+      <entry key="D1" value="732.3127455043403" />
+      <entry key="W1" value="878.3226639414406" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
-      <entry key="MS500" value="1.1893409409172858E-109" />
-      <entry key="S2" value="5.8725482300404395E-28" />
-      <entry key="S5" value="1.2809454544376816E-11" />
-      <entry key="S10" value="3.5790298328455483E-6" />
-      <entry key="S30" value="0.015300147709954425" />
-      <entry key="S60" value="0.12796282362873732" />
-      <entry key="M2" value="0.4975419302012032" />
-      <entry key="M5" value="1.8734477318034957" />
-      <entry key="M10" value="3.276441076479722" />
-      <entry key="M15" value="4.012437440662474" />
-      <entry key="M30" value="5.94455869465417" />
-      <entry key="H1" value="14.109844250108136" />
-      <entry key="H2" value="35.96573194953148" />
-      <entry key="H4" value="68.56651119788002" />
-      <entry key="D1" value="129.7315497335888" />
-      <entry key="W1" value="146.04921495768403" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="4.266539984369994E-280" />
+      <entry key="S10" value="2.0655604528480842E-140" />
+      <entry key="S30" value="2.7437590496310843E-47" />
+      <entry key="S60" value="5.238090348238643E-24" />
+      <entry key="M2" value="2.288687472819002E-12" />
+      <entry key="M5" value="2.207163964648382E-5" />
+      <entry key="M10" value="0.004698071308367565" />
+      <entry key="M15" value="0.0280663029295188" />
+      <entry key="M30" value="0.1791778782621824" />
+      <entry key="H1" value="1.0350657135101398" />
+      <entry key="H2" value="8.214187417351198" />
+      <entry key="H4" value="32.265971289033935" />
+      <entry key="D1" value="114.90117592606987" />
+      <entry key="W1" value="144.3603810713059" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.188641310021643" />
-      <entry key="MS500" value="1.776924055419485" />
-      <entry key="S2" value="2.0960052715734796" />
-      <entry key="S5" value="2.696012044379857" />
-      <entry key="S10" value="3.191785027949699" />
-      <entry key="S30" value="4.202388746309898" />
-      <entry key="S60" value="6.328748165986849" />
-      <entry key="M2" value="10.30438766976666" />
-      <entry key="M5" value="18.71821418924866" />
-      <entry key="M10" value="25.650895460059242" />
-      <entry key="M15" value="29.144832669927144" />
-      <entry key="M30" value="41.85567348589472" />
-      <entry key="H1" value="105.87386126684825" />
-      <entry key="H2" value="258.2759684157604" />
-      <entry key="H4" value="460.2910073597259" />
-      <entry key="D1" value="810.4192967183378" />
-      <entry key="W1" value="900.7547388930124" />
+      <entry key="MS100" value="1.2370069611864836" />
+      <entry key="MS500" value="3.2435971382118725" />
+      <entry key="S2" value="6.615384430510767" />
+      <entry key="S5" value="12.219045410573415" />
+      <entry key="S10" value="17.486677596107835" />
+      <entry key="S30" value="25.109887295340076" />
+      <entry key="S60" value="33.208845312493324" />
+      <entry key="M2" value="44.18876430074497" />
+      <entry key="M5" value="56.524898353766076" />
+      <entry key="M10" value="62.49931583696084" />
+      <entry key="M15" value="65.93400423883277" />
+      <entry key="M30" value="76.2013372237595" />
+      <entry key="H1" value="96.6190650853742" />
+      <entry key="H2" value="162.55556100596013" />
+      <entry key="H4" value="332.0635785043275" />
+      <entry key="D1" value="847.2116091717905" />
+      <entry key="W1" value="1022.6826288890617" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -129,42 +128,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.database.executor": "Run",
-    "Python.features.executor": "Run",
-    "Python.marketplace.executor": "Run",
-    "Python.marketplace_pricing (1).executor": "Run",
-    "Python.marketplace_pricing_final.executor": "Run",
-    "Python.model.executor": "Run",
-    "Python.pricing.executor": "Run",
-    "Python.similarity.executor": "Run",
-    "Python.test.executor": "Run",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "E:/Rasengan/craftlink-ai",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.database.executor&quot;: &quot;Run&quot;,
+    &quot;Python.features.executor&quot;: &quot;Run&quot;,
+    &quot;Python.marketplace.executor&quot;: &quot;Run&quot;,
+    &quot;Python.marketplace_pricing (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.marketplace_pricing_final.executor&quot;: &quot;Run&quot;,
+    &quot;Python.model.executor&quot;: &quot;Run&quot;,
+    &quot;Python.pricing.executor&quot;: &quot;Run&quot;,
+    &quot;Python.similarity.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;E:/Rasengan/craftlink-ai&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="E:\Rasengan\craftlink-ai" />
@@ -188,6 +187,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/database.py" />
       <option name="PARAMETERS" value="" />
@@ -211,6 +212,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace.py" />
       <option name="PARAMETERS" value="" />
@@ -234,6 +237,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing_final.py" />
       <option name="PARAMETERS" value="" />
@@ -257,6 +262,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/pricing.py" />
       <option name="PARAMETERS" value="" />
@@ -280,6 +287,8 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="DEBUG_JUST_MY_CODE" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="RUN_TOOL" value="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test.py" />
       <option name="PARAMETERS" value="" />
@@ -303,7 +312,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-2653e85de345-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.31033.139" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PY-261.27258.51" />
+        <option value="bundled-python-sdk-84eaadda3698-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.27258.51" />
       </set>
     </attachedChunks>
   </component>
@@ -323,6 +333,7 @@
       <workItem from="1788688777827" duration="1909000" />
       <workItem from="1788690714350" duration="3751000" />
       <workItem from="1788701500985" duration="1007000" />
+      <workItem from="1788860687401" duration="386000" />
     </task>
     <servers />
   </component>

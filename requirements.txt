@@ -23,3 +23,5 @@ xgboost
 sentence-transformers
 pytrends
 joblib
+whisper
+imageio-ffmpeg
