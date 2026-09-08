@@ -479,6 +479,15 @@ class PricingPipeline:
     # ML READINESS
     # ========================================================
 
+    def is_ml_ready(self, comparable_count: int = 0) -> bool:
+        """Backward-compatible readiness check used by older test/app code.
+
+        A product is not considered ML-ready when no accepted comparable
+        exists. The full reason is available from check_ml_readiness().
+        """
+        ready, _ = self.check_ml_readiness(comparable_count)
+        return ready
+
     def check_ml_readiness(
         self,
         comparable_count: int,
@@ -687,6 +696,9 @@ class PricingPipeline:
         # ----------------------------------------------------
         # 1. FRESH MARKETPLACE DATA -> SIMILARITY
         # ----------------------------------------------------
+        # Every marketplace result is only a CANDIDATE. Raw marketplace
+        # prices are NEVER allowed to enter the pricing calculation.
+        # Only products accepted by SimilarityEngine become comparables.
         current_comparables = self.find_comparables(
             product=product_attributes,
             listings=current_listings,
@@ -696,6 +708,9 @@ class PricingPipeline:
         # ----------------------------------------------------
         # 2. HISTORICAL DB -> SAME SIMILARITY ENGINE
         # ----------------------------------------------------
+        # Historical listings are also passed through the same similarity
+        # engine. Therefore historical prices can influence pricing only
+        # when the historical listing is itself a valid comparable.
         historical_comparables = self.find_historical_comparables(
             product=product_attributes,
             product_id=product_id,
@@ -703,15 +718,22 @@ class PricingPipeline:
         )
 
         # ----------------------------------------------------
-        # 3. CURRENT + HISTORICAL PRICE EVIDENCE
+        # 3. COMPARABLE-ONLY MARKET EVIDENCE
         # ----------------------------------------------------
+        # CRITICAL RULE:
+        #   current_listings       -> NEVER used directly for pricing
+        #   current_comparables    -> USED
+        #   historical_comparables -> USED
+        #
+        # Irrelevant products, even if very cheap or very expensive, have
+        # ZERO influence on market minimum/median/maximum or pricing.
         current_prices = self._current_prices(current_comparables)
         historical_prices = self._unique_historical_prices(
             historical_comparables
         )
 
-        # Current data is the primary market signal. Historical data is
-        # added as supporting evidence, never used instead of fresh analysis.
+        # Current comparable evidence is primary; historical comparable
+        # evidence is supporting evidence.
         market_prices = current_prices + historical_prices
         market_stats = self.calculate_market_statistics(market_prices)
 
@@ -760,6 +782,8 @@ class PricingPipeline:
             self._get(product, "features", self._get(product, "craft_features", []))
         )
 
+        # Pass ONLY prices belonging to accepted comparable products.
+        # Raw marketplace listings are intentionally NOT passed here.
         pricing_result = generate_price_recommendation(
             production=production_input,
             features=product_features,
@@ -887,9 +911,10 @@ class PricingPipeline:
         print("=" * 78)
         print(f"Product ID                 : {result.product_id}")
         print(f"Current listings fetched   : {result.current_listing_count}")
-        print(f"Current comparables        : {result.current_comparable_count}")
-        print(f"Historical comparables     : {result.historical_comparable_count}")
+        print(f"Current comparables USED   : {result.current_comparable_count}")
+        print(f"Historical comparables USED: {result.historical_comparable_count}")
         print(f"Historical price evidence  : {result.historical_price_count}")
+        print("RAW NON-COMPARABLE LISTINGS: NOT USED FOR PRICING")
         print(f"Best similarity score      : {result.similarity_score:.4f}")
         print("-" * 78)
         print(f"ML readiness               : {'YES' if result.ml_readiness else 'NO'}")
@@ -1005,9 +1030,9 @@ if __name__ == "__main__":
 
     production = ProductionInput(
         material_cost=350,
-        labour_cost=250,
         production_cost=100,
         time_worked_hours=6,
+        craft_labour_rate=100,
     )
 
     guardrails = PricingGuardrails(

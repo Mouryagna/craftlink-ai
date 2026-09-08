@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from statistics import median
 from typing import Iterable, Optional
@@ -19,6 +20,13 @@ MAX_TIME_FACTOR = 1.50
 DEFAULT_MAX_DAILY_PRICE_CHANGE = 0.15
 DEFAULT_MAX_MARKET_DEVIATION = 0.30
 
+# Time worked has intentionally LOW influence on the final price.
+# It can adjust the formula baseline by at most +/- 5% around the reference.
+TIME_PRICE_WEIGHT = 0.05
+
+# Default craft labour rate. ProductionInput can override this per craft.
+DEFAULT_LABOUR_RATE_PER_HOUR = 100.0
+
 
 # ============================================================
 # DATA CLASSES
@@ -27,9 +35,9 @@ DEFAULT_MAX_MARKET_DEVIATION = 0.30
 @dataclass
 class ProductionInput:
     material_cost: float
-    labour_cost: float
     production_cost: float
     time_worked_hours: float
+    craft_labour_rate: float = DEFAULT_LABOUR_RATE_PER_HOUR
 
 
 @dataclass
@@ -128,11 +136,6 @@ def validate_production_input(
     )
 
     _validate_non_negative(
-        production.labour_cost,
-        "Labour cost",
-    )
-
-    _validate_non_negative(
         production.production_cost,
         "Production cost",
     )
@@ -141,6 +144,16 @@ def validate_production_input(
         production.time_worked_hours,
         "Time worked",
     )
+
+    _validate_non_negative(
+        production.craft_labour_rate,
+        "Craft labour rate",
+    )
+
+    if production.craft_labour_rate <= 0:
+        raise ValueError(
+            "Craft labour rate must be greater than zero."
+        )
 
 
 def validate_guardrails(
@@ -187,6 +200,30 @@ def validate_guardrails(
 
 
 # ============================================================
+# ARTISAN LABOUR COST (DIMINISHING SQUARE-ROOT FORMULA)
+# ============================================================
+
+def calculate_labour_cost(
+    time_worked_hours: float,
+    labour_rate_per_hour: float = DEFAULT_LABOUR_RATE_PER_HOUR,
+) -> float:
+    """
+    Calculate artisan labour value using a square root dampening curve.
+    Formula: sqrt(time_worked_hours) * labour_rate_per_hour
+    Prevents long artisan hours from blowing up product base cost.
+    """
+    _validate_non_negative(time_worked_hours, "Time worked")
+    _validate_non_negative(labour_rate_per_hour, "Labour rate")
+
+    if labour_rate_per_hour <= 0:
+        raise ValueError(
+            "Labour rate must be greater than zero."
+        )
+
+    return round(math.sqrt(time_worked_hours) * labour_rate_per_hour, 2)
+
+
+# ============================================================
 # BASE PRODUCTION COST
 # ============================================================
 
@@ -197,16 +234,22 @@ def calculate_base_cost(
     Base production cost supplied by the artisan.
 
     material cost
-    + labour cost
+    + dampened labour cost
     + other production cost
     """
 
     validate_production_input(production)
 
-    return (
+    labour_value = calculate_labour_cost(
+        production.time_worked_hours,
+        production.craft_labour_rate,
+    )
+
+    return round(
         production.material_cost
-        + production.labour_cost
-        + production.production_cost
+        + labour_value
+        + production.production_cost,
+        2,
     )
 
 
@@ -219,10 +262,15 @@ def calculate_time_factor(
     reference_hours: float = REFERENCE_WORKING_HOURS,
 ) -> float:
     """
-    Converts production time into a bounded factor.
+    Returns a bounded normalized time factor.
 
-    This prevents extremely large or extremely small
-    working-hour values from dominating the price.
+    IMPORTANT:
+    This factor is NOT applied directly as:
+        price * time_factor
+
+    The final formula gives time only TIME_PRICE_WEIGHT (5%)
+    influence, so unusually high working hours cannot dominate
+    the selling price.
     """
 
     _validate_non_negative(
@@ -231,15 +279,11 @@ def calculate_time_factor(
     )
 
     if reference_hours <= 0:
-
         raise ValueError(
             "Reference working hours must be greater than zero."
         )
 
-    factor = (
-        time_worked_hours
-        / reference_hours
-    )
+    factor = time_worked_hours / reference_hours
 
     return max(
         MIN_TIME_FACTOR,
@@ -334,9 +378,9 @@ def calculate_fair_trade_floor(
             "Fair-trade multiplier must be greater than zero."
         )
 
-    return (
-        base_cost
-        * multiplier
+    return round(
+        base_cost * multiplier,
+        2,
     )
 
 
@@ -395,11 +439,21 @@ def calculate_formula_price(
             "Seasonal index must be greater than zero."
         )
 
-    return (
+    # Time has LOW influence by design.
+    # At the reference time (factor=1.0), adjustment is 1.0.
+    # At the bounded maximum factor (1.5), time contributes only +2.5%.
+    # At the bounded minimum factor (0.8), it contributes only -1%.
+    time_adjustment = (
+        1.0
+        + TIME_PRICE_WEIGHT * (time_factor - 1.0)
+    )
+
+    return round(
         base_cost
-        * time_factor
+        * time_adjustment
         * complexity_factor
-        * seasonal_index
+        * seasonal_index,
+        2,
     )
 
 
@@ -422,7 +476,7 @@ def calculate_market_based_price(
     if market_stats.median_price is None:
         return None
 
-    return market_stats.median_price
+    return round(market_stats.median_price, 2)
 
 
 # ============================================================
@@ -744,14 +798,12 @@ def generate_price_recommendation(
 
     elif market_based_price is not None:
 
-        # Market evidence is available.
-        # Formula remains the fallback/baseline.
-        recommended_price = max(
-            formula_price,
-            market_based_price,
-        )
-
-        pricing_method = "MARKET_BASED"
+        if market_based_price >= formula_price:
+            recommended_price = market_based_price
+            pricing_method = "MARKET_BASED"
+        else:
+            recommended_price = formula_price
+            pricing_method = "FORMULA_BASED"
 
     else:
 
@@ -760,12 +812,10 @@ def generate_price_recommendation(
 
         pricing_method = "COST_TIME_BASED"
 
-    # Never allow the raw recommendation below
-    # the system-derived floor.
-    recommended_price = max(
-        recommended_price,
-        fair_trade_floor,
-    )
+    # Floor override check
+    if fair_trade_floor > recommended_price:
+        recommended_price = fair_trade_floor
+        pricing_method = "FAIR_TRADE_FLOOR"
 
     recommended_before_guardrails = (
         recommended_price
@@ -782,6 +832,10 @@ def generate_price_recommendation(
         guardrails=guardrails,
         previous_price=previous_price,
     )
+
+    # Reflect method change if guardrail floor intervened
+    if final_price == fair_trade_floor and pricing_method != "FAIR_TRADE_FLOOR":
+        pricing_method = "FAIR_TRADE_FLOOR"
 
     # ========================================================
     # EFFECTIVE MINIMUM
@@ -906,9 +960,9 @@ if __name__ == "__main__":
 
     production = ProductionInput(
         material_cost=350,
-        labour_cost=250,
         production_cost=100,
         time_worked_hours=6,
+        craft_labour_rate=100,
     )
 
     features = [
@@ -933,6 +987,14 @@ if __name__ == "__main__":
         maximum_daily_change=0.15,
         maximum_market_deviation=0.30,
     )
+
+    # sqrt(6) * 100 ≈ 244.95
+    expected_labour = round(math.sqrt(6) * 100, 2)
+    # 350 + 244.95 + 100 = 694.95
+    expected_base_cost = round(350 + expected_labour + 100, 2)
+
+    assert calculate_labour_cost(6, 100) == expected_labour
+    assert calculate_base_cost(production) == expected_base_cost
 
     result = generate_price_recommendation(
         production=production,

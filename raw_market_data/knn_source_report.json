@@ -1,0 +1,35 @@
+{
+  "target": 5000,
+  "total_records": 5000,
+  "remaining": 0,
+  "sources": {
+    "kaarigaronline": {
+      "name": "Kaarigar Online",
+      "tier": "primary",
+      "sitemaps_processed": 8,
+      "candidate_urls": 79,
+      "tested": 79,
+      "accepted": 55,
+      "failures": {
+        "no_price": 19,
+        "weak_product_signal": 5
+      },
+      "total_after_source": 55
+    },
+    "gaatha": {
+      "name": "Gaatha",
+      "tier": "primary",
+      "sitemaps_processed": 30,
+      "candidate_urls": 9109,
+      "tested": 5265,
+      "accepted": 4945,
+      "failures": {
+        "no_price": 311,
+        "http_500": 8,
+        "http_404": 1
+      },
+      "total_after_source": 5000
+    }
+  },
+  "generated_at": "2026-09-07 21:13:32"
+}
