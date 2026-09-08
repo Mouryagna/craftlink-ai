@@ -42,9 +42,9 @@ if str(SRC_DIR) not in sys.path:
 # ============================================================================
 
 try:
-    from marketplace_sources import collect_marketplace_candidates
+    from marketplace_pricing.marketplace_sources import collect_marketplace_candidates
 except ImportError:
-    from marketplace_sources import HandmadeMarketplaceCollector
+    from marketplace_pricing.marketplace_sources import HandmadeMarketplaceCollector
 
     _collector = HandmadeMarketplaceCollector()
 
@@ -58,7 +58,7 @@ except ImportError:
             primary_limit_per_source=primary_limit_per_source,
             secondary_limit_per_source=secondary_limit_per_source,
         )
-from similarity import SimilarityEngine, ProductAttributes
+from marketplace_pricing.similarity import SimilarityEngine, ProductAttributes
 from marketplace_pricing import (
     ProductionInput,
     PricingGuardrails,
@@ -66,7 +66,7 @@ from marketplace_pricing import (
 )
 
 try:
-    from features import NUMERIC_FEATURES
+    from marketplace_pricing.features import NUMERIC_FEATURES
 except ImportError:
     NUMERIC_FEATURES = []
 
