@@ -5,14 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f204aa81-7e7d-40b1-ac24-8a04f3b7f7a2" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/raw_market_data/knn_collection_progress.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/raw_market_data/knn_products.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/raw_market_data/knn_products.jsonl" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/raw_market_data/knn_source_probe.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/raw_market_data/knn_source_report.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/pricing.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/pricing.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/marketplace_pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/marketplace_sources.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_sources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/pricing.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,15 +130,19 @@
     &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
     &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.amazon_extracter.executor&quot;: &quot;Run&quot;,
     &quot;Python.database.executor&quot;: &quot;Run&quot;,
     &quot;Python.features.executor&quot;: &quot;Run&quot;,
     &quot;Python.marketplace.executor&quot;: &quot;Run&quot;,
     &quot;Python.marketplace_pricing (1).executor&quot;: &quot;Run&quot;,
+    &quot;Python.marketplace_pricing.executor&quot;: &quot;Run&quot;,
     &quot;Python.marketplace_pricing_final.executor&quot;: &quot;Run&quot;,
+    &quot;Python.marketplace_sources.executor&quot;: &quot;Run&quot;,
     &quot;Python.model.executor&quot;: &quot;Run&quot;,
     &quot;Python.pricing.executor&quot;: &quot;Run&quot;,
     &quot;Python.similarity.executor&quot;: &quot;Run&quot;,
     &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.text_no_market.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
@@ -149,7 +151,7 @@
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SHANKS&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;E:/Rasengan/craftlink-ai&quot;,
@@ -172,8 +174,8 @@
       <recent name="E:\Rasengan\craftlink-ai" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.test">
-    <configuration name="database" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.pricing">
+    <configuration name="features" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SIH_2026" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -187,7 +189,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/database.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/features.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -219,7 +221,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="marketplace_pricing_final" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="marketplace_pricing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SIH_2026" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -233,7 +235,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing_final.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -290,11 +292,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.marketplace_pricing_final" />
-        <item itemvalue="Python.database" />
-        <item itemvalue="Python.marketplace" />
         <item itemvalue="Python.pricing" />
+        <item itemvalue="Python.test" />
+        <item itemvalue="Python.marketplace_pricing" />
+        <item itemvalue="Python.marketplace" />
+        <item itemvalue="Python.features" />
       </list>
     </recent_temporary>
   </component>

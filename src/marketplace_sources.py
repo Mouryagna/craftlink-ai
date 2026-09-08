@@ -25,8 +25,10 @@ Design:
     4. If the product is handloom/textile and primary evidence is insufficient,
        search Amazon and Flipkart as secondary sources.
     5. Return NORMALIZED LISTING DICTS.
-    6. SimilarityEngine decides which listings are actually comparable.
-       This module never decides the final price.
+    6. An LLM product analyzer decides which fetched listings are relevant
+       enough to enter the candidate pool.
+    7. SimilarityEngine then performs the detailed multi-factor comparison.
+       This module never calculates a price.
 
 No CAPTCHA/anti-bot bypass is used.
 If a site blocks normal requests, that source is skipped.
@@ -84,11 +86,13 @@ SECONDARY_RESULT_LIMIT = 5
 MAX_PRIMARY_CANDIDATES = 60
 MAX_TOTAL_CANDIDATES = 80
 
-# LLM query-generation configuration. The LLM only expands retrieval queries;
-# it never scores products or calculates prices.
+# LLM retrieval + candidate-analysis configuration. The LLM never calculates prices.
 LLM_QUERY_MODEL = os.getenv("GEMINI_QUERY_MODEL", "gemini-2.5-flash-lite")
+LLM_CLASSIFIER_MODEL = os.getenv("GEMINI_CLASSIFIER_MODEL", LLM_QUERY_MODEL)
 LLM_QUERIES_PER_SOURCE = 6
 LLM_MAX_QUERY_LENGTH = 140
+LLM_CLASSIFIER_BATCH_SIZE = 12
+LLM_CLASSIFIER_MIN_CONFIDENCE = 0.70
 
 # Secondary search is intentionally limited to handloom/handicraft/textile
 # queries. It is not the primary source pool.
@@ -182,6 +186,131 @@ class MarketplaceCandidate:
 
 
 # ---------------------------------------------------------------------------
+# LLM PRODUCT CATEGORY CLASSIFIER
+# ---------------------------------------------------------------------------
+
+class LLMProductCategoryClassifier:
+    """Resolve the concrete marketplace product family before retrieval.
+
+    The classifier is used only for retrieval vocabulary.  It never scores
+    listings and never calculates prices.  If Gemini is unavailable, the
+    original product_type is retained and deterministic aliases are used.
+    """
+
+    def __init__(self, model: str = LLM_QUERY_MODEL):
+        self.model = model
+        self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
+        self._client = None
+
+    def _get_client(self):
+        if self._client is not None:
+            return self._client
+        if not self.api_key:
+            return None
+        try:
+            from google import genai
+            self._client = genai.Client(api_key=self.api_key)
+            return self._client
+        except Exception:
+            return None
+
+    @staticmethod
+    def _fallback(product: Dict[str, Any]) -> Dict[str, Any]:
+        name = str(product.get("product_name", "") or "").lower()
+        ptype = str(product.get("product_type", "") or "").strip().lower()
+        rules = {
+            "water bottle": ["water bottle", "terracotta bottle", "earthen bottle", "clay bottle", "flask"],
+            "basket": ["basket", "bamboo basket", "woven basket", "storage basket", "fruit basket", "hamper"],
+            "stool": ["stool", "handcrafted stool", "wooden stool", "cane stool"],
+            "table": ["table", "side table", "coffee table", "lawn table"],
+            "swing chair": ["swing chair", "hanging swing chair", "jhoola", "hanging chair"],
+            "swing": ["swing", "jhoola", "swing chair", "hanging swing"],
+            "chair": ["chair", "armchair", "cane chair", "wooden chair"],
+        }
+        if "water bottle" in name or "bottle" in name:
+            ptype = "water bottle"
+        elif "basket" in name or "hamper" in name:
+            ptype = "basket"
+        elif "stool" in name:
+            ptype = "stool"
+        elif "swing chair" in name:
+            ptype = "swing chair"
+        elif "swing" in name or "jhoola" in name:
+            ptype = "swing"
+        elif "table" in name:
+            ptype = "table"
+        aliases = rules.get(ptype, [ptype] if ptype else [])
+        return {"product_category": ptype, "aliases": aliases}
+
+    def classify(self, product: Dict[str, Any]) -> Dict[str, Any]:
+        fallback = self._fallback(product)
+        client = self._get_client()
+        if client is None:
+            return fallback
+
+        payload = {
+            "product_name": product.get("product_name", ""),
+            "product_type": product.get("product_type", ""),
+            "material": product.get("material", ""),
+            "features": product.get("features", []),
+            "description": product.get("description", ""),
+        }
+        prompt = f"""
+You are the PRODUCT CATEGORY CLASSIFIER for an artisan marketplace pricing
+system.
+
+Determine the concrete PRODUCT FAMILY of this product for marketplace search.
+Do not broaden it into a generic craft category. For example:
+- terracotta water bottle -> water bottle
+- bamboo basket -> basket
+- cane stool -> stool
+- rattan swing chair -> swing chair
+
+Return useful commercial synonyms that still refer to the same buyer-purpose
+product. Do NOT return unrelated adjacent products such as cups for bottles,
+plates for baskets, tables for stools, or sarees for furniture.
+
+PRODUCT:
+{json.dumps(payload, ensure_ascii=False, indent=2)}
+
+Return ONLY JSON:
+{{
+  "product_category": "concrete category",
+  "aliases": ["synonym 1", "synonym 2", "synonym 3"],
+  "confidence": 0.0
+}}
+"""
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "product_category": {"type": "STRING"},
+                "aliases": {"type": "ARRAY", "items": {"type": "STRING"}},
+                "confidence": {"type": "NUMBER"},
+            },
+            "required": ["product_category", "aliases", "confidence"],
+        }
+        try:
+            response = client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config={"response_mime_type": "application/json", "response_schema": schema, "temperature": 0.0},
+            )
+            data = json.loads(getattr(response, "text", "") or "{}")
+            category = str(data.get("product_category", "")).strip().lower()
+            aliases = [str(x).strip().lower() for x in data.get("aliases", []) if str(x).strip()]
+            try:
+                confidence = float(data.get("confidence", 0.0))
+            except (TypeError, ValueError):
+                confidence = 0.0
+            if not category or confidence < 0.60:
+                return fallback
+            return {"product_category": category, "aliases": list(dict.fromkeys([category, *aliases]))}
+        except Exception as exc:
+            print(f"  LLM product category classification failed: {exc}", flush=True)
+            return fallback
+
+
+# ---------------------------------------------------------------------------
 # SMART QUERY GENERATOR
 # ---------------------------------------------------------------------------
 
@@ -245,6 +374,7 @@ class SmartQueryGenerator:
             "dimensions_height": product.get("dimensions_height"),
             "features": features,
             "description": str(product.get("description", "")),
+            "search_terms": product.get("search_terms", []),
         }
 
     def _fallback_queries(
@@ -260,19 +390,21 @@ class SmartQueryGenerator:
         features = data["features"]
 
         feature_text = " ".join(features[:3])
+        aliases = [str(x).strip() for x in data.get("search_terms", []) if str(x).strip()]
+        core_terms = aliases[:4] if aliases else [product_type]
         queries = [
-            f"handmade {material} {product_type}",
-            f"handcrafted {material} {product_type}",
-            f"handwoven {material} {product_type}" if any(
+            f"handmade {material} {core_terms[0]}",
+            f"handcrafted {material} {core_terms[0]}",
+            f"handwoven {material} {core_terms[1] if len(core_terms) > 1 else core_terms[0]}" if any(
                 "woven" in x.lower() or "weav" in x.lower()
                 for x in features
-            ) else f"traditional {material} {product_type}",
-            f"{size} {material} {product_type}" if size else
-            f"natural {material} {product_type}",
-            f"{color} {material} {product_type}" if color else
-            f"artisan {material} {product_type}",
-            f"{feature_text} {material} {product_type}" if feature_text else
-            f"traditional handmade {material} {product_type}",
+            ) else f"traditional {material} {core_terms[0]}",
+            f"{size} {material} {core_terms[2] if len(core_terms) > 2 else core_terms[0]}" if size else
+            f"natural {material} {core_terms[0]}",
+            f"{color} {material} {core_terms[3] if len(core_terms) > 3 else core_terms[0]}" if color else
+            f"artisan {material} {core_terms[0]}",
+            f"{feature_text} {material} {core_terms[0]}" if feature_text else
+            f"traditional handmade {material} {core_terms[0]}",
         ]
         return queries
 
@@ -395,6 +527,244 @@ Return ONLY valid JSON matching this schema:
 
 
 # ---------------------------------------------------------------------------
+# LLM CANDIDATE ANALYZER
+# ---------------------------------------------------------------------------
+
+class LLMCandidateAnalyzer:
+    """
+    Semantic marketplace-product gate.
+
+    Search engines are allowed to return noisy URLs.  A listing becomes a
+    marketplace candidate ONLY after this analyzer decides that it is relevant
+    to the target artisan product.
+
+    This is deliberately different from similarity.py:
+        - this class answers: "Should this marketplace product enter our pool?"
+        - similarity.py answers: "How similar is the accepted product?"
+
+    No numeric price is produced here.
+    """
+
+    def __init__(
+        self,
+        model: str = LLM_CLASSIFIER_MODEL,
+        batch_size: int = LLM_CLASSIFIER_BATCH_SIZE,
+        min_confidence: float = LLM_CLASSIFIER_MIN_CONFIDENCE,
+    ):
+        self.model = model
+        self.batch_size = max(1, int(batch_size))
+        self.min_confidence = float(min_confidence)
+        self.api_key = os.getenv("GEMINI_API_KEY", "").strip()
+        self._client = None
+
+    def _get_client(self):
+        if self._client is not None:
+            return self._client
+        if not self.api_key:
+            return None
+        try:
+            from google import genai
+            self._client = genai.Client(api_key=self.api_key)
+            return self._client
+        except Exception:
+            return None
+
+    @staticmethod
+    def _target_payload(product: Dict[str, Any]) -> Dict[str, Any]:
+        features = product.get("features", [])
+        if isinstance(features, str):
+            features = [x.strip() for x in features.split(",") if x.strip()]
+        return {
+            "product_name": str(product.get("product_name", "")),
+            "product_type": str(product.get("product_type", "")),
+            "material": str(product.get("material", "")),
+            "additional_materials": product.get("additional_materials", []),
+            "color": str(product.get("color", "")),
+            "size": str(product.get("size", "")),
+            "dimensions": str(product.get("dimensions", "")),
+            "features": features,
+            "description": str(product.get("description", "")),
+        }
+
+    @staticmethod
+    def _candidate_payload(index: int, listing: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "id": index,
+            "title": str(listing.get("title", "")),
+            "product_type": str(listing.get("product_type", "")),
+            "material": str(listing.get("material", "")),
+            "color": str(listing.get("color", "")),
+            "size": str(listing.get("size", "")),
+            "dimensions": str(listing.get("dimensions", "")),
+            "features": listing.get("features", []),
+            "description": str(listing.get("description", ""))[:1200],
+            "price": listing.get("price"),
+        }
+
+    def _classify_batch(
+        self,
+        product: Dict[str, Any],
+        listings: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        client = self._get_client()
+        if client is None:
+            raise RuntimeError(
+                "GEMINI_API_KEY is required for marketplace candidate analysis. "
+                "No listing is accepted without the analyzer."
+            )
+
+        target = json.dumps(
+            self._target_payload(product),
+            ensure_ascii=False,
+            indent=2,
+        )
+        candidates = [
+            self._candidate_payload(i, listing)
+            for i, listing in enumerate(listings)
+        ]
+
+        prompt = f"""
+You are the PRODUCT RELEVANCE ANALYZER for SIH26090 marketplace pricing.
+
+Your job is NOT to calculate price and NOT to perform final similarity scoring.
+Your only job is to decide whether each marketplace listing is a valid product
+candidate for the target artisan product.
+
+TARGET ARTISAN PRODUCT:
+{target}
+
+MARKETPLACE LISTINGS:
+{json.dumps(candidates, ensure_ascii=False, indent=2)}
+
+CLASSIFICATION LABELS:
+- PRIMARY: same core product/category and same buyer purpose. Material may differ.
+- RELATED: closely related product family or use, but not the same exact product.
+- REJECT: different product category, different buyer purpose, accessory/part,
+  generic page, bundle with a different core product, or clearly unrelated item.
+
+CRITICAL RULES:
+1. PRODUCT IDENTITY and BUYER PURPOSE are the strongest signals.
+2. Do NOT accept a product merely because one word overlaps.
+3. Do NOT accept cups/mugs/plates as water bottles just because they are pottery.
+4. Do NOT accept sarees, paintings, vases, jewellery, etc. for a bottle/basket/stool/table.
+5. Material mismatch alone is NOT a rejection when the product identity is the same.
+6. Synonyms and commercial naming variants are allowed:
+   bottle/flask/earthen bottle can be related to a water bottle;
+   jhoola/swing/swing chair can be related when the target is a swing product;
+   hamper/basket can be related when the target is a basket.
+7. Judge the actual product described by the listing, not the marketplace domain.
+8. Price must NEVER determine relevance.
+9. If the listing is ambiguous, prefer REJECT rather than inventing relevance.
+10. Return one decision for EVERY input id.
+
+Return ONLY JSON matching this schema:
+{{
+  "results": [
+    {{
+      "id": 0,
+      "decision": "PRIMARY|RELATED|REJECT",
+      "confidence": 0.0,
+      "reason": "short reason"
+    }}
+  ]
+}}
+"""
+
+        schema = {
+            "type": "OBJECT",
+            "properties": {
+                "results": {
+                    "type": "ARRAY",
+                    "items": {
+                        "type": "OBJECT",
+                        "properties": {
+                            "id": {"type": "INTEGER"},
+                            "decision": {"type": "STRING"},
+                            "confidence": {"type": "NUMBER"},
+                            "reason": {"type": "STRING"},
+                        },
+                        "required": ["id", "decision", "confidence", "reason"],
+                    },
+                }
+            },
+            "required": ["results"],
+        }
+
+        response = client.models.generate_content(
+            model=self.model,
+            contents=prompt,
+            config={
+                "response_mime_type": "application/json",
+                "response_schema": schema,
+                "temperature": 0.0,
+            },
+        )
+        raw = getattr(response, "text", "") or ""
+        data = json.loads(raw)
+        return data.get("results", []) if isinstance(data, dict) else []
+
+    def filter_candidates(
+        self,
+        product: Dict[str, Any],
+        listings: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Classify every extracted listing and keep only LLM-approved ones."""
+        if not listings:
+            return []
+
+        accepted: List[Dict[str, Any]] = []
+        print(
+            f"  LLM product analyzer: evaluating {len(listings)} fetched listings...",
+            flush=True,
+        )
+
+        for start in range(0, len(listings), self.batch_size):
+            batch = listings[start:start + self.batch_size]
+            try:
+                decisions = self._classify_batch(product, batch)
+            except Exception as exc:
+                # Fail closed: no analyzer decision means no candidate.
+                print(
+                    f"  LLM product analyzer failed for batch {start // self.batch_size + 1}: {exc}",
+                    flush=True,
+                )
+                continue
+
+            by_id = {}
+            for decision in decisions:
+                try:
+                    by_id[int(decision.get("id"))] = decision
+                except (TypeError, ValueError):
+                    continue
+
+            for local_id, listing in enumerate(batch):
+                decision = by_id.get(local_id)
+                if not decision:
+                    continue
+
+                label = str(decision.get("decision", "REJECT")).upper().strip()
+                try:
+                    confidence = float(decision.get("confidence", 0.0))
+                except (TypeError, ValueError):
+                    confidence = 0.0
+                confidence = max(0.0, min(1.0, confidence))
+
+                listing["llm_relevance"] = label
+                listing["llm_relevance_confidence"] = confidence
+                listing["llm_relevance_reason"] = str(decision.get("reason", ""))
+
+                if label in {"PRIMARY", "RELATED"} and confidence >= self.min_confidence:
+                    accepted.append(listing)
+                    print(
+                        f"  [LLM {label}] {listing.get('title', '')[:90]} "
+                        f"| ₹{listing.get('price')} | confidence={confidence:.2f}",
+                        flush=True,
+                    )
+
+        return accepted
+
+
+# ---------------------------------------------------------------------------
 # COLLECTOR
 # ---------------------------------------------------------------------------
 
@@ -418,6 +788,7 @@ class HandmadeMarketplaceCollector:
         self.session = requests.Session()
         self.session.headers.update(HEADERS)
         self.query_generator = SmartQueryGenerator()
+        self.candidate_analyzer = LLMCandidateAnalyzer()
         self._sitemap_cache = {}
         self._query_log = {}
 
@@ -744,6 +1115,24 @@ class HandmadeMarketplaceCollector:
                     add_urls(future.result())
                 except Exception:
                     pass
+
+        # If search engines do not understand the site-qualified query, retry
+        # with the plain marketplace phrase and still enforce the target domain.
+        if not results and base_url and allowed_domain in {"amazon.in", "flipkart.com"}:
+            plain_query = re.sub(r"^site:[^ ]+\s*", "", query, flags=re.IGNORECASE).strip()
+            try:
+                with ThreadPoolExecutor(max_workers=2) as executor:
+                    futures = [
+                        executor.submit(self._search_duckduckgo, plain_query, allowed_domain, limit),
+                        executor.submit(self._search_bing, plain_query, allowed_domain, limit),
+                    ]
+                    for future in as_completed(futures):
+                        try:
+                            add_urls(future.result())
+                        except Exception:
+                            pass
+            except Exception:
+                pass
 
         # Direct marketplace search ALWAYS gets a chance.
         if base_url and len(results) < limit:
@@ -1447,7 +1836,12 @@ class HandmadeMarketplaceCollector:
     def search_source(self, source_name: str, base_url: str, product: Dict[str, Any], limit: int, source_tier: str) -> List[Dict[str, Any]]:
         """Run all six queries for one marketplace concurrently, then fetch pages concurrently."""
         domain = self._source_domain(base_url)
-        queries = self.query_generator.generate(product=product, source_name=source_name, source_domain=domain)
+        category_info = self.category_classifier.classify(product)
+        retrieval_product = dict(product)
+        retrieval_product["product_type"] = category_info.get("product_category") or product.get("product_type", "")
+        retrieval_product["search_terms"] = category_info.get("aliases", [])
+        print(f"  LLM category: {retrieval_product.get('product_type', '')} | aliases: {retrieval_product.get('search_terms', [])[:6]}", flush=True)
+        queries = self.query_generator.generate(product=retrieval_product, source_name=source_name, source_domain=domain)
         self._query_log[source_name] = list(queries)
         raw_urls = []
         print(f"  Searching {source_name} across web + direct marketplace search...", flush=True)
@@ -1462,7 +1856,21 @@ class HandmadeMarketplaceCollector:
                 except Exception:
                     pass
         raw_urls = list(dict.fromkeys(raw_urls))[:MAX_PRIMARY_CANDIDATES]
+
+        # DEBUG/VERIFICATION MODE: show exactly what the search engine found
+        # BEFORE the LLM analyzer or any relevance decision. This lets us
+        # verify whether the marketplace actually contains useful products.
+        print("", flush=True)
+        print("  " + "=" * 78, flush=True)
+        print("  DISCOVERED URL AUDIT - BEFORE LLM ANALYSIS", flush=True)
+        print(f"  Target product: {product.get('product_name', '')}", flush=True)
+        print(f"  Target type   : {product.get('product_type', '')}", flush=True)
+        print(f"  Target material: {product.get('material', '')}", flush=True)
+        print(f"  URLs discovered: {len(raw_urls)}", flush=True)
+        print("  " + "=" * 78, flush=True)
+
         results = []
+        discovered_audit = []
         with ThreadPoolExecutor(max_workers=min(PAGE_WORKERS, max(1, len(raw_urls)))) as executor:
             future_map = {executor.submit(self._fetch_page, url): url for url in raw_urls}
             for future in as_completed(future_map):
@@ -1471,22 +1879,45 @@ class HandmadeMarketplaceCollector:
                     soup = future.result()
                 except Exception:
                     soup = None
+
                 if soup is None:
+                    discovered_audit.append((url, "[PAGE FETCH FAILED]"))
                     continue
+
                 try:
-                    candidate = self._extract_product(marketplace=source_name, url=url, soup=soup, source_tier=source_tier)
+                    candidate = self._extract_product(
+                        marketplace=source_name,
+                        url=url,
+                        soup=soup,
+                        source_tier=source_tier,
+                    )
                 except Exception:
                     candidate = None
-                if candidate is not None:
-                    listing = candidate.to_listing()
-                    if self._candidate_is_usable(listing, product):
-                        results.append(listing)
-                        print(
-                            f"  [{source_name}] ACCEPTED: "
-                            f"{listing.get('title', '')[:100]} "
-                            f"| ₹{listing.get('price')}",
-                            flush=True,
-                        )
+
+                if candidate is None:
+                    # Try to expose the HTML title even if product extraction
+                    # failed, so the user can still inspect the discovered URL.
+                    page_title = soup.title.get_text(" ", strip=True) if soup.title else "[PRODUCT EXTRACTION FAILED]"
+                    discovered_audit.append((url, page_title))
+                    continue
+
+                listing = candidate.to_listing()
+                discovered_audit.append((url, listing.get("title", "[NO PRODUCT TITLE]")))
+
+                if self._candidate_is_usable(listing, product):
+                    results.append(listing)
+
+        # Print in stable URL-discovery order rather than completion order.
+        audit_map = {url: title for url, title in discovered_audit}
+        for index, url in enumerate(raw_urls, start=1):
+            print(f"  [{index:02d}] PRODUCT: {audit_map.get(url, '[NOT FETCHED]')}", flush=True)
+            print(f"       URL    : {url}", flush=True)
+        print("  " + "=" * 78, flush=True)
+
+        # The search engine only finds pages. The LLM decides which extracted
+        # products are actually relevant to the target artisan product.
+        fetched = self.deduplicate(results)
+        results = self.candidate_analyzer.filter_candidates(product, fetched)
         results = self.deduplicate(results)
         print(
             f"  [{source_name}] URLs discovered: {len(raw_urls)}",
@@ -1540,22 +1971,13 @@ class HandmadeMarketplaceCollector:
         listing: Dict[str, Any],
         product: Optional[Dict[str, Any]] = None,
     ) -> bool:
-        """Apply retrieval hygiene before a listing enters the candidate pool.
+        """Only perform non-semantic hygiene before LLM analysis.
 
-        This is intentionally NOT the SimilarityEngine.  It performs only a
-        coarse product-family sanity check so that obvious sarees, necklaces,
-        home pages, gift cards, etc. do not pollute a basket/table/swing search.
-
-        Material is deliberately NOT a hard gate here: the SimilarityEngine must
-        still be allowed to compare the same product type made from a different
-        material as a secondary/related comparable.
+        IMPORTANT: product relevance is NOT decided here.  The LLM candidate
+        analyzer is the gate.  This method only prevents broken pages and
+        invalid prices from being sent to the analyzer.
         """
-        title = re.sub(
-            r"\s+",
-            " ",
-            str(listing.get("title", "")),
-        ).strip()
-
+        title = re.sub(r"\s+", " ", str(listing.get("title", ""))).strip()
         url = str(listing.get("url", "") or "")
 
         if not title or cls._generic_page_title(title, url):
@@ -1566,94 +1988,7 @@ class HandmadeMarketplaceCollector:
         except (TypeError, ValueError):
             return False
 
-        if price <= 0:
-            return False
-
-        # No target supplied: retain the old lightweight behaviour.
-        if not product:
-            return True
-
-        target_type = cls._effective_target_type(product)
-        candidate_type = str(listing.get("product_type", "") or "").strip().lower()
-
-        # Keep retrieval flexible about MATERIAL, but do not allow an obviously
-        # different PRODUCT TYPE into the candidate pool. SimilarityEngine will
-        # still make the final comparability decision.
-        related_types = {
-            "water bottle": {"water bottle", "bottle", "flask", "pottery", "jug"},
-            "swing": {"swing", "chair"},
-            "chair": {"chair", "swing"},
-            "basket": {"basket"},
-            "stool": {"stool", "ottoman"},
-            "table": {"table"},
-            "lamp": {"lamp"},
-            "bag": {"bag"},
-            "saree": {"saree"},
-            "dupatta": {"dupatta"},
-            "stole": {"stole"},
-            "shawl": {"shawl"},
-            "bedsheet": {"bedsheet"},
-            "rug": {"rug"},
-            "cushion": {"cushion"},
-            "pottery": {"pottery", "jug", "water bottle"},
-            "jug": {"jug", "pottery", "water bottle"},
-        }
-
-        allowed_types = related_types.get(target_type, {target_type})
-
-        if target_type and candidate_type:
-            if candidate_type in allowed_types:
-                return True
-
-            # Candidate metadata can be wrong. Check the actual listing title
-            # before rejecting it. If the title contains the target/related
-            # product term, keep it and let SimilarityEngine score it.
-            title_lower = title.lower()
-            if any(
-                re.search(r"\b" + re.escape(term) + r"\b", title_lower)
-                for term in allowed_types
-            ):
-                return True
-
-            # It is a clearly different concrete product. Reject at retrieval
-            # time so sarees/paintings/vases cannot become bottle evidence.
-            return False
-
-        # Unknown candidate type: require at least a strong textual signal from
-        # the actual listing title. This prevents generic/unknown pages from
-        # becoming pricing evidence while still allowing incomplete pages through.
-        target_material = str(product.get("material", "") or "").strip().lower()
-        title_lower = title.lower()
-
-        type_terms = {
-            "swing": ("swing", "jhoola"),
-            "water bottle": ("water bottle", "bottle", "flask"),
-            "basket": ("basket", "hamper"),
-            "stool": ("stool", "ottoman"),
-            "chair": ("chair", "armchair"),
-            "table": ("table",),
-            "lamp": ("lamp", "lantern", "light"),
-            "bag": ("bag", "tote", "clutch", "pouch"),
-            "saree": ("saree", "sari"),
-            "dupatta": ("dupatta",),
-            "stole": ("stole",),
-            "shawl": ("shawl",),
-            "bedsheet": ("bedsheet", "bed sheet"),
-            "rug": ("rug", "dhurrie", "durrie"),
-            "cushion": ("cushion", "pillow cover"),
-            "pottery": ("pottery", "terracotta pot", "earthen pot"),
-            "jug": ("jug", "pitcher"),
-        }
-
-        target_terms = type_terms.get(target_type, (target_type,) if target_type else ())
-        if target_terms and any(term in title_lower for term in target_terms):
-            return True
-
-        # For an otherwise unknown candidate, material alone is not enough.
-        # "Bamboo" can describe baskets, chairs, tables, etc.; accepting it by
-        # material would reintroduce unrelated products into the pool.
-        _ = target_material
-        return False
+        return price > 0
 
 
     # -----------------------------------------------------------------------

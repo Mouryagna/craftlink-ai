@@ -1030,9 +1030,9 @@ if __name__ == "__main__":
 
     production = ProductionInput(
         material_cost=350,
-        labour_cost=250,
         production_cost=100,
         time_worked_hours=6,
+        craft_labour_rate=100,
     )
 
     guardrails = PricingGuardrails(
