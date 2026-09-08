@@ -25,3 +25,6 @@ pytrends
 joblib
 whisper
 imageio-ffmpeg
+basicsr
+realesrgan
+spandrel

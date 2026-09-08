@@ -1,56 +1,68 @@
-from pathlib import Path
 from typing import List, Dict, Optional, TypedDict
 from pydantic import BaseModel, Field
 
 
 # ==========================================
-# 1. Output Schemas (JSON-Exportable via Pydantic)
+# 1. Image Enhancement Output Schemas
 # ==========================================
 
-class UserDisplayOutput(BaseModel):
-    """Payload formatted specifically for mobile app UI rendering."""
-    status: str = Field(default="success", description="Status code for the UI")
-    hero_image_url: str = Field(description="Primary enhanced studio photo path/URL")
-    gallery_image_urls: List[str] = Field(default_factory=list, description="All enhanced angle shots")
-    visual_badge: str = Field(description="Clean, low-literacy label e.g. 'Terracotta Pot • High Detail (4/5)'")
-    detected_colors: List[str] = Field(default_factory=list, description="Visual color palette tags")
-    ui_message: str = Field(
-        default="Photos enhanced successfully! Tap the microphone to tell us about your craft.",
-        description="Friendly instruction for the artisan"
-    )
+class ProcessedImageItem(BaseModel):
+    original_path: str
+    upscaled_path: Optional[str] = None
+    cutout_path: Optional[str] = None
+    studio_path: Optional[str] = None
 
+
+class ProcessedImages(BaseModel):
+    items: List[ProcessedImageItem] = Field(default_factory=list)
+    hero_studio_path: Optional[str] = None
+    background_color: str = "#FFFFFF"
+
+
+# ==========================================
+# 2. Visual Analysis Output Schemas
+# ==========================================
 
 class DimensionsEstimate(BaseModel):
-    height_cm: Optional[float] = None
-    width_cm: Optional[float] = None
-    depth_cm: Optional[float] = None
-    confidence: str = Field(default="estimated", description="Confidence level of scale estimation")
+    length: Optional[float] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    unit: str = "cm"
 
 
-class PipelinePayloadOutput(BaseModel):
-    """Strict data payload passed downstream to LangGraph parent state, NLP reconciler, and Pricing engine."""
-    primary_image_path: str
-    gallery_image_paths: List[str]
-    visual_complexity_score: int = Field(ge=1, le=5, description="Integer rating from 1 to 5 for XGBoost")
-    detected_craft_type: str = Field(description="Backup craft classification if omitted in voice")
-    materials_detected: List[str] = Field(default_factory=list, description="Backup materials if omitted in voice")
-    color_palette: List[str] = Field(default_factory=list)
-    dimensions_estimate: DimensionsEstimate
+class VisualAnalysis(BaseModel):
+    detected_craft_type: str
+    primary_color: str
+    detected_colors: List[str] = Field(default_factory=list)
+    size_category: str = Field(description="'Small', 'Medium', or 'Large'")
+    dimensions_estimate: DimensionsEstimate = Field(default_factory=DimensionsEstimate)
+    visual_complexity_score: int = Field(default=3, ge=1, le=5)
+    surface_detailing: str
 
 
 # ==========================================
-# 2. LangGraph Subgraph State
+# 3. Vision Module Master Output Contract
+# ==========================================
+
+class VisionModuleOutput(BaseModel):
+    product_id: str
+    processed_images: ProcessedImages
+    visual_analysis: VisualAnalysis
+
+
+# ==========================================
+# 4. LangGraph Subgraph Working State
 # ==========================================
 
 class VisionState(TypedDict, total=False):
     # Inputs
-    raw_image_paths: List[str]
+    product_id: str
+    image_paths: List[str]  # Max 4 to 5 images
+    custom_bg_color: Optional[str]  # e.g., "#FFFFFF", "#F4F1EA", or any hex
 
-    # Intermediate working artifacts
-    enhanced_image_paths: List[str]
-    contour_count: int
-    edge_density_pct: float
+    # Intermediate / Processed data
+    processed_images: Dict
+    visual_analysis: Dict
 
-    # Final Output Contracts
-    user_display: Dict  # Serialized UserDisplayOutput JSON
-    pipeline_payload: Dict  # Serialized PipelinePayloadOutput JSON
+    # Final consolidated output payload
+    final_output: Dict
