@@ -24,3 +24,4 @@ gradio_client
 beautifulsoup4
 gTTS
 pytrends
+rembg[cpu]

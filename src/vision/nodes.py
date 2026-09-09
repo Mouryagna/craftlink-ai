@@ -126,7 +126,7 @@ def fallback_clean_cutout(input_path: Path, bg_hex: str = "#FFFFFF") -> Image.Im
         canvas = Image.new("RGBA", (int(tw * 1.2), int(th * 1.2)), clean_hex)
         canvas.paste(trimmed, ((canvas.width - tw) // 2, (canvas.height - th) // 2), mask=trimmed.split()[-1])
         return canvas.convert("RGB")
-    except Exception as err:
+    except BaseException as err:
         print(f"    [!] rembg local processing error: {err}. Using canvas padding fallback.")
         raw = Image.open(input_path).convert("RGB")
         w, h = raw.size
