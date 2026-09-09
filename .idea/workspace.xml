@@ -4,18 +4,13 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f204aa81-7e7d-40b1-ac24-8a04f3b7f7a2" name="Changes" comment="MODUE 3 8-9-2026:19:34">
-      <change afterPath="$PROJECT_DIR$/src/marketplace_pricing/trainer.py" afterDir="false" />
+    <list default="true" id="f204aa81-7e7d-40b1-ac24-8a04f3b7f7a2" name="Changes" comment="MODUE 3 8-9-2026:19:46">
+      <change afterPath="$PROJECT_DIR$/src/marketplace_pricing/seed_db.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/features.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/features.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/marketplace.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/marketplace.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/marketplace_pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/marketplace_pricing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/marketplace_sources.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/marketplace_sources.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/pricing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/pricing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/similarity.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/marketplace_pricing/marketplace_sources.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/marketplace_sources.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/marketplace_pricing/similarity.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/similarity.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/marketplace_pricing/trainer.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/marketplace_pricing/trainer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -145,7 +140,9 @@
     "Python.marketplace_sources.executor": "Run",
     "Python.model.executor": "Run",
     "Python.pricing.executor": "Run",
+    "Python.seed_db.executor": "Run",
     "Python.similarity.executor": "Run",
+    "Python.test (1).executor": "Run",
     "Python.test.executor": "Run",
     "Python.text_no_market.executor": "Run",
     "Python.trainer.executor": "Run",
@@ -181,7 +178,7 @@
       <recent name="E:\Rasengan\craftlink-ai" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.marketplace_pricing (1)">
+  <component name="RunManager" selected="Python.test (1)">
     <configuration name="marketplace_pricing (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SIH_2026" />
       <option name="ENV_FILES" value="" />
@@ -205,7 +202,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="marketplace_pricing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="marketplace_sources" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SIH_2026" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -214,12 +211,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/marketplace_pricing" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing/marketplace_sources.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -228,7 +225,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="pricing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="SIH_2026" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -237,12 +234,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/marketplace_pricing" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="RUN_TOOL" value="" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/pricing.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/marketplace_pricing/test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -299,11 +296,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.test (1)" />
+        <item itemvalue="Python.marketplace_sources" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.marketplace_pricing (1)" />
         <item itemvalue="Python.trainer" />
-        <item itemvalue="Python.pricing" />
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.marketplace_pricing" />
       </list>
     </recent_temporary>
   </component>
@@ -339,7 +336,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788876297078</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="MODUE 3 8-9-2026:19:46">
+      <option name="closed" value="true" />
+      <created>1788877026904</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1788877026904</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -358,6 +363,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="MODUE 3 8-9-2026:19:34" />
-    <option name="LAST_COMMIT_MESSAGE" value="MODUE 3 8-9-2026:19:34" />
+    <MESSAGE value="MODUE 3 8-9-2026:19:46" />
+    <option name="LAST_COMMIT_MESSAGE" value="MODUE 3 8-9-2026:19:46" />
   </component>
 </project>
