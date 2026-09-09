@@ -10,8 +10,7 @@ from src.vision.graph import vision_subgraph
 from src.voice_catalog.graph import nlp_subgraph
 from src.pricing.graph import pricing_subgraph
 
-# Optional: set BACKEND_BASE_URL (e.g. "http://localhost:8000" or "https://api.craftlink.ai")
-# If unset or empty, it returns clean relative paths like "/outputs/ART-XXXXXX/image.jpg"
+# Base URL for static hosting (e.g. "http://localhost:8000" or production URL)
 BASE_URL = os.getenv("BACKEND_BASE_URL", "").rstrip("/")
 
 
@@ -25,7 +24,6 @@ def to_web_url(local_path_str: Optional[str]) -> Optional[str]:
         return None
 
     p = Path(local_path_str)
-    # The parent directory corresponds to the product_id folder under /outputs/
     product_folder = p.parent.name
     filename = p.name
 
@@ -130,9 +128,11 @@ def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
     formatted_gallery: List[Dict[str, Any]] = []
 
     for item in raw_gallery_items:
+        orig_filename = Path(item["original_path"]).name if item.get("original_path") else None
+        original_url = f"{BASE_URL}/uploads/{product_id}/{orig_filename}" if (BASE_URL and orig_filename) else (f"/uploads/{product_id}/{orig_filename}" if orig_filename else None)
+
         formatted_gallery.append({
-            "original_url": f"/uploads/{product_id}/{Path(item['original_path']).name}" if item.get(
-                "original_path") else None,
+            "original_url": original_url,
             "upscaled_url": to_web_url(item.get("upscaled_path")),
             "cutout_url": to_web_url(item.get("cutout_path")),
             "studio_url": to_web_url(item.get("studio_path"))
@@ -179,3 +179,44 @@ def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
     )
 
     return {"final_catalog": record.model_dump()}
+
+
+# -------------------------------------------------------------------------
+# Multi-Step Execution Helper (Step 2: Voice -> NLP -> Auto Pricing)
+# -------------------------------------------------------------------------
+def execute_nlp_and_pricing(
+    product_id: str,
+    vision_output: Dict[str, Any],
+    audio_path: Optional[str],
+    manual_text: Optional[str]
+) -> Dict[str, Any]:
+    """
+    Executes Voice/Catalog subgraph, reconciles it with Vision, triggers
+    CatBoost Pricing, and returns the final unified FinalCatalogRecord.
+    """
+    # 1. Run Voice Subgraph
+    voice_input = {
+        "product_id": product_id,
+        "audio_path": audio_path,
+        "manual_text": manual_text
+    }
+    voice_res = nlp_subgraph.invoke(voice_input)
+    voice_output = voice_res.get("final_output", {})
+
+    # 2. Reconcile Features for Pricing
+    mock_state: MasterGraphState = {
+        "product_id": product_id,
+        "image_paths": [],
+        "vision_output": vision_output,
+        "voice_output": voice_output
+    }
+    pricing_payload = reconcile_features_node(mock_state)["pricing_input"]
+
+    # 3. Auto-Trigger Pricing Subgraph
+    pricing_res = pricing_subgraph.invoke(pricing_payload)
+    pricing_output = pricing_res.get("final_output", {})
+
+    # 4. Assemble identical Final Catalog
+    mock_state["pricing_output"] = pricing_output
+    final_record = assemble_catalog_node(mock_state)["final_catalog"]
+    return final_record
