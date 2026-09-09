@@ -6,7 +6,10 @@ import subprocess
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 import numpy as np
-import whisper
+try:
+    import whisper
+except ImportError:
+    whisper = None
 import whisper.audio
 import imageio_ffmpeg
 
