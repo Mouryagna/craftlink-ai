@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="58171a3c-aa99-4dee-85da-610e6d0042da" name="Changes" comment="removed weights from git">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/db_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/master_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/master_node.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/server.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="125" />
+    <option name="cachedIndexableFilesCount" value="128" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -164,6 +161,7 @@
       <workItem from="1788890354672" duration="69000" />
       <workItem from="1788927600802" duration="5742000" />
       <workItem from="1788952106573" duration="2272000" />
+      <workItem from="1788956934338" duration="3117000" />
     </task>
     <option name="localTasksCounter" value="3" />
     <servers />
