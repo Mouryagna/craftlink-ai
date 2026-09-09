@@ -1,10 +1,36 @@
+import os
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List, Optional
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 from src.master_state import MasterGraphState, FinalCatalogRecord, CardDisplayData, BilingualText
 from src.vision.graph import vision_subgraph
 from src.voice_catalog.graph import nlp_subgraph
 from src.pricing.graph import pricing_subgraph
+
+# Optional: set BACKEND_BASE_URL (e.g. "http://localhost:8000" or "https://api.craftlink.ai")
+# If unset or empty, it returns clean relative paths like "/outputs/ART-XXXXXX/image.jpg"
+BASE_URL = os.getenv("BACKEND_BASE_URL", "").rstrip("/")
+
+
+def to_web_url(local_path_str: Optional[str]) -> Optional[str]:
+    """
+    Converts a local filesystem path into an accessible static web URL.
+    Example input:  'E:\\craftlink-ai\\outputs\\ART-44B913\\ART-44B913_1_studio.jpg'
+    Example output: '/outputs/ART-44B913/ART-44B913_1_studio.jpg'
+    """
+    if not local_path_str:
+        return None
+
+    p = Path(local_path_str)
+    # The parent directory corresponds to the product_id folder under /outputs/
+    product_folder = p.parent.name
+    filename = p.name
+
+    relative_path = f"/outputs/{product_folder}/{filename}"
+    return f"{BASE_URL}{relative_path}" if BASE_URL else relative_path
 
 
 # -------------------------------------------------------------------------
@@ -51,7 +77,7 @@ def reconcile_features_node(state: MasterGraphState) -> Dict[str, Any]:
     size_category = str(v_analysis.get("size_category", "medium")).lower().strip()
     complexity_score = int(v_analysis.get("visual_complexity_score", 3))
 
-    # Labor & materials: extracted by Gemini from audio transcription/manual text
+    # Labor & materials: extracted by Gemini from audio transcription or manual text
     worked_hours = float(pricing_feats.get("time_worked_hours", 6.0))
     stated_cost = pricing_feats.get("material_cost")
     artisan_floor = prod_info.get("artisan_floor_price")
@@ -78,7 +104,7 @@ def run_pricing_node(state: MasterGraphState) -> Dict[str, Any]:
 
 
 # -------------------------------------------------------------------------
-# Node 5: Storefront Card Assembly (Bilingual UI Data)
+# Node 5: Storefront Card Assembly (Bilingual UI Data & Web URL Conversion)
 # -------------------------------------------------------------------------
 def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
     product_id = state.get("product_id", "ART-000001")
@@ -95,11 +121,24 @@ def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
     tiers = pricing.get("retail_tiers", {})
     recommended_price = float(tiers.get("recommended_price", 499.0))
 
-    # Convert local studio path to web-served asset URL
-    hero_path = studio_images.get("hero_studio_path")
-    hero_url = f"/outputs/{Path(hero_path).name}" if hero_path else None
+    # 1. Convert hero studio path to web URL
+    hero_local_path = studio_images.get("hero_studio_path")
+    hero_url = to_web_url(hero_local_path)
 
-    # Construct the exact bilingual mobile card structure
+    # 2. Convert all studio image gallery paths to web URLs
+    raw_gallery_items: List[Dict[str, Any]] = studio_images.get("items", [])
+    formatted_gallery: List[Dict[str, Any]] = []
+
+    for item in raw_gallery_items:
+        formatted_gallery.append({
+            "original_url": f"/uploads/{product_id}/{Path(item['original_path']).name}" if item.get(
+                "original_path") else None,
+            "upscaled_url": to_web_url(item.get("upscaled_path")),
+            "cutout_url": to_web_url(item.get("cutout_path")),
+            "studio_url": to_web_url(item.get("studio_path"))
+        })
+
+    # 3. Assemble frontend Card view structure
     card_data = CardDisplayData(
         hero_image_url=hero_url,
         title=BilingualText(
@@ -115,6 +154,7 @@ def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
         pricing_tier="recommended"
     )
 
+    # 4. Create final catalog payload
     record = FinalCatalogRecord(
         product_id=product_id,
         card_view=card_data,
@@ -133,7 +173,7 @@ def assemble_catalog_node(state: MasterGraphState) -> Dict[str, Any]:
                 "en": en_cat.get("seo_keywords", []),
                 "hi": hi_cat.get("seo_keywords", [])
             },
-            "studio_images": studio_images.get("items", [])
+            "studio_images": formatted_gallery
         },
         pricing_details=pricing
     )

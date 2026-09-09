@@ -36,8 +36,9 @@ OUTPUT_DIR = Path.cwd() / "outputs"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Mount outputs so mobile apps can load studio images (e.g., http://<host>:8000/outputs/...)
+# Mount both static asset directories
 app.mount("/outputs", StaticFiles(directory=str(OUTPUT_DIR)), name="outputs")
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
 
 def process_catalog_pipeline(
@@ -68,6 +69,7 @@ def process_catalog_pipeline(
 async def health_check():
     return {"status": "healthy", "service": "craftlink-ai-backend"}
 
+
 @app.post("/api/v1/catalog/create")
 async def create_catalog_entry(
     background_tasks: BackgroundTasks,
@@ -84,13 +86,15 @@ async def create_catalog_entry(
     Renders clean 'Choose File' pickers in Swagger UI.
     """
     clean_manual_text = manual_text.strip() if manual_text else None
-    if not audio and not clean_manual_text:
+    has_audio = audio is not None and bool(audio.filename)
+
+    if not has_audio and not clean_manual_text:
         raise HTTPException(
             status_code=422,
-            detail="You must provide either an audio recording or manual text description."
+            detail="You must provide either an audio recording or a manual text description."
         )
 
-    # Collect all uploaded images that were provided
+    # Collect provided images and verify at least one is valid
     uploaded_images: List[UploadFile] = [
         img for img in [image_1, image_2, image_3, image_4] if img is not None and img.filename
     ]
@@ -114,7 +118,7 @@ async def create_catalog_entry(
 
     # 2. Save voice recording if provided
     saved_audio = None
-    if audio and audio.filename:
+    if has_audio:
         suffix = Path(audio.filename).suffix or ".wav"
         audio_path = prod_dir / f"artisan_voice{suffix}"
         with open(audio_path, "wb") as buffer:
@@ -162,14 +166,14 @@ async def get_catalog_status(product_id: str):
         return {
             "status": "FAILED",
             "product_id": product_id,
-            "error": record["error"]
+            "error": record.get("error") or record.get("catalog")
         }
 
     return {
         "status": "COMPLETED",
         "product_id": product_id,
         "execution_time_seconds": record.get("execution_time_seconds"),
-        "data": record["catalog"]
+        "data": record.get("catalog")
     }
 
 

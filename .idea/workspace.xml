@@ -4,38 +4,14 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="58171a3c-aa99-4dee-85da-610e6d0042da" name="Changes" comment="removed weights from git">
-      <change afterPath="$PROJECT_DIR$/.github/workflows/pricing_sync.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/sync_market_scraper.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/scripts/train_pricing_model.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/db_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/master_graph.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/master_node.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/master_state.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/benchmark_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/core_rules.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/graph.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/ml_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/nodes.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/pricing/state.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/server.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/pricing.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/pricing.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_1_studio.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_2_studio.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_3_studio.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/media/processed/ART-000001/ART-000001_4_studio.jpg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/pricing/catboost_pricing_model.cbm" beforeDir="false" afterPath="$PROJECT_DIR$/models/pricing/catboost_pricing_model.cbm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/vision/graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vision/graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/vision/nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/vision/nodes.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/voice_catalog/graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/voice_catalog/graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/voice_catalog/nodes.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/voice_catalog/nodes.py" afterDir="false" />
-    </list>
+    <list default="true" id="58171a3c-aa99-4dee-85da-610e6d0042da" name="Changes" comment="removed weights from git" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="95" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -47,78 +23,116 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Mouryagna&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Mouryagna/craftlink-ai.git&quot;,
+    &quot;accountId&quot;: &quot;8b352a94-4632-45ab-815e-340f9cde72af&quot;
+  }
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.5129930353675891" />
-      <entry key="MS500" value="2.6445554571149223" />
-      <entry key="S2" value="4.211637809506618" />
-      <entry key="S5" value="5.474890839975324" />
-      <entry key="S10" value="6.142322413779308" />
-      <entry key="S30" value="6.732321071729241" />
-      <entry key="S60" value="7.8666350997239105" />
-      <entry key="M2" value="11.995352609405904" />
-      <entry key="M5" value="21.400518936667517" />
-      <entry key="M10" value="29.725497301388003" />
-      <entry key="M15" value="34.839065625654094" />
-      <entry key="M30" value="46.58048659549463" />
-      <entry key="H1" value="63.80114117462048" />
-      <entry key="H2" value="81.57237792048316" />
-      <entry key="H4" value="94.9702946988973" />
-      <entry key="D1" value="109.60117284923729" />
-      <entry key="W1" value="112.5036779897312" />
+      <entry key="MS100" value="1.1882312547806104" />
+      <entry key="MS500" value="2.1421074987613196" />
+      <entry key="S2" value="2.7296768715180884" />
+      <entry key="S5" value="2.886682270717958" />
+      <entry key="S10" value="3.03615392496512" />
+      <entry key="S30" value="7.827968334808591" />
+      <entry key="S60" value="16.63792978431716" />
+      <entry key="M2" value="28.049408805447165" />
+      <entry key="M5" value="44.64939036399281" />
+      <entry key="M10" value="56.70316668258269" />
+      <entry key="M15" value="63.38230461483107" />
+      <entry key="M30" value="76.87858771466685" />
+      <entry key="H1" value="95.11703787772163" />
+      <entry key="H2" value="113.56010816810134" />
+      <entry key="H4" value="127.40013440235614" />
+      <entry key="D1" value="142.4944997393015" />
+      <entry key="W1" value="145.4881089458822" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
-      <entry key="S2" value="2.9033078480578167E-185" />
-      <entry key="S5" value="1.5316418884046417E-74" />
-      <entry key="S10" value="1.2375952037740932E-37" />
-      <entry key="S30" value="4.98340525552265E-13" />
-      <entry key="S60" value="7.059323802973376E-7" />
-      <entry key="M2" value="8.401978221212769E-4" />
-      <entry key="M5" value="0.05885083384816256" />
-      <entry key="M10" value="0.24259531851626331" />
-      <entry key="M15" value="0.38919785860850975" />
-      <entry key="M30" value="0.6387280283373955" />
-      <entry key="H1" value="0.9124196030177599" />
-      <entry key="H2" value="1.2389371208883646" />
-      <entry key="H4" value="1.5345271766760464" />
-      <entry key="D1" value="1.9065033534755658" />
-      <entry key="W1" value="1.9861847712323928" />
+      <entry key="S2" value="5.700620561114914E-200" />
+      <entry key="S5" value="2.0061751839550256E-80" />
+      <entry key="S10" value="1.4163951369427323E-40" />
+      <entry key="S30" value="5.212684929697822E-14" />
+      <entry key="S60" value="2.2831305108770787E-7" />
+      <entry key="M2" value="4.778211496864778E-4" />
+      <entry key="M5" value="0.04695762763742911" />
+      <entry key="M10" value="0.21670013371520153" />
+      <entry key="M15" value="0.360984275494334" />
+      <entry key="M30" value="0.6151413129011813" />
+      <entry key="H1" value="0.8954143867041019" />
+      <entry key="H2" value="1.2273374770567373" />
+      <entry key="H4" value="1.5273267191310866" />
+      <entry key="D1" value="1.9050094499863304" />
+      <entry key="W1" value="1.9859623621760885" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.4708833158774082" />
-      <entry key="MS500" value="2.6288294448070992" />
-      <entry key="S2" value="4.205275531774715" />
-      <entry key="S5" value="5.471608056182625" />
-      <entry key="S10" value="6.140488685548334" />
-      <entry key="S30" value="6.731653132374488" />
-      <entry key="S60" value="7.866243125481311" />
-      <entry key="M2" value="11.995800392093221" />
-      <entry key="M5" value="21.45713679668921" />
-      <entry key="M10" value="29.96400179099877" />
-      <entry key="M15" value="35.223993256931756" />
-      <entry key="M30" value="47.21579845936775" />
-      <entry key="H1" value="64.71131527092618" />
-      <entry key="H2" value="82.80998451551352" />
-      <entry key="H4" value="96.50408574503967" />
-      <entry key="D1" value="111.50754108489045" />
-      <entry key="W1" value="114.48984311020146" />
+      <entry key="MS100" value="1.1142527136366285" />
+      <entry key="MS500" value="2.1142257093013566" />
+      <entry key="S2" value="2.720824550471832" />
+      <entry key="S5" value="2.882942270583338" />
+      <entry key="S10" value="3.034087597250951" />
+      <entry key="S30" value="7.824769025076296" />
+      <entry key="S60" value="16.634145371968074" />
+      <entry key="M2" value="28.046759452787267" />
+      <entry key="M5" value="44.69302108594971" />
+      <entry key="M10" value="56.9153620586149" />
+      <entry key="M15" value="63.738742620518046" />
+      <entry key="M30" value="77.49013662850777" />
+      <entry key="H1" value="96.01009495758349" />
+      <entry key="H2" value="114.7860501287388" />
+      <entry key="H4" value="128.9266895646683" />
+      <entry key="D1" value="144.39936767543938" />
+      <entry key="W1" value="147.47405073011785" />
     </decayedShown>
   </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3J3WgnXpgNPcmkOgF9hHuEDFoyk" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "main",
-    "node.js.selected.package.tslint": "(autodetect)"
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-PY-261.27258.51" />
+        <option value="bundled-python-sdk-84eaadda3698-c2ffad84badb-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-261.27258.51" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
     <task id="LOCAL-00001">
       <option name="closed" value="true" />
@@ -136,8 +150,20 @@
       <option name="project" value="LOCAL" />
       <updated>1788878457092</updated>
     </task>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="58171a3c-aa99-4dee-85da-610e6d0042da" name="Changes" comment="removed weights from git" />
+      <created>1788890351944</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1788890351944</updated>
+      <workItem from="1788890354672" duration="69000" />
+      <workItem from="1788927600802" duration="2744000" />
+    </task>
     <option name="localTasksCounter" value="3" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="removed weights from git" />
